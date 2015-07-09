@@ -9,7 +9,7 @@ AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
 
 LOG_BASE_DIRECTORY = "log/"
-DEBUG_CONSOLE = True
+DEBUG_CONSOLE = False
 DEBUG_LOG = False
 CHAT_LOGGING = False # do not enable here and bot
 
@@ -89,7 +89,6 @@ class TinychatRoom():
         self.protocol = tcurlsplits2[0]                                 # Defining RTMP Type [RTMP/RTMPE,etc]
         self.ip = tcurlsplits3[0]                                       # Defining RTMP Server IP
         self.port = int(tcurlsplits3[1])
-        #self.port = self.__getProperPort(tcurlsplits3[1])
         self.app = tcurlsplits1[3]                                      # Defining Tinychat FMS App
         self.pageurl = "http://tinychat.com/" + room                    # Definging Tinychat's Room HTTP URL
         self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0632.swf?version=1.0.0.0632/[[DYNAMIC]]/8" #static
@@ -105,11 +104,6 @@ class TinychatRoom():
         self.chatlogging = CHAT_LOGGING
         # self.stack = False
         self.userID = None
-        # self.lastMsgTime = 0
-        # self.spamProtection = False
-        # self.weirdChar = "n"
-        # self.minSwapCount = 3 # how many times to send the first private messages or user requests
-        # self.autoIdentify = False
         # self.forgiveQueue = []
 
 
@@ -193,13 +187,11 @@ class TinychatRoom():
                         user = self._getUser(pars[1])
                         user.id = pars[0]
                         self.onJoin(user)
-                        # if user.nick != self.nick: self.autoId(user)
                         self._chatlog(str(user.nick) + " joined " + str(self.room) + ".")
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
                             user = self._getUser(pars[i*2 + 2])
                             user.id = pars[i*2 + 1]
-                            # if user.nick != self.nick: self.autoId(user)
                     elif cmd == "joinsdone":
                         self.sendCauth(self.userID)
                         if self.nick: self.setNick()
