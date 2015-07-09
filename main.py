@@ -4,6 +4,7 @@ import random
 import os
 import sys
 import time
+import socket
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -102,9 +103,8 @@ class TinychatRoom():
         self.echo = False # the old one
         self.echo2 = __name__ == "__main__" # the new one!
         self.chatlogging = CHAT_LOGGING
-        # self.stack = False
         self.userID = None
-        # self.forgiveQueue = []
+        self.forgiveQueue = []
 
 
     def connect(self, force=False):
@@ -182,7 +182,6 @@ class TinychatRoom():
                         self.onRegister(user)
                         self.userID = user.id
                         user.accountName = self.username
-
                     elif cmd == "join":
                         user = self._getUser(pars[1])
                         user.id = pars[0]
@@ -199,12 +198,66 @@ class TinychatRoom():
                         self.topic = pars[0].encode("ascii", "ignore")
                         self.onTopic(self.topic)
                         self._chatlog("The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
+                    elif cmd == "nick":
+                        user = self._getUser(pars[0])
+                        old = user.nick
+                        user.nick = pars[1]
+                        if old.lower() in self.users.keys():
+                            del self.users[old]
+                            self.users[user.nick] = user
+                        self.onNickChange(user.nick, old, user)
+                        self._chatlog(str(old) + " is now known as " + str(user.nick) + ".")
+                    elif cmd == "notice":
+                        if str(pars[0]) == "avon":
+                            print("AVON: " + str(pars[2]))
+                            user = self._getUser(pars[2])
+                            user.avon = True
+                    elif cmd == "avons":
+                        for i in range(int((len(pars) - 1) / 2)):
+                            user = self._getUser(pars[i*2 + 2])
+                            user.avon = True
+                    elif cmd == "quit":
+                        user = self.users[pars[0].lower()]
+                        del self.users[pars[0].lower()]
+                        self.onQuit(user)
+                        self._chatlog(str(user.nick) + " left.")
+                    elif cmd == "kick":
+                        user = self.users[pars[1].lower()]
+                        self.onBan(user)
+                        self._chatlog(str(user.nick) + " was banned.")
+                    elif cmd == "oper":
+                        user = self._getUser(pars[1])
+                        user.oper = True
             except Exception as e:
                 debugPrint(str(e), self.room)
+
+    def disconnect(self):
+        if self.connected:
+            self.connected = False
+            try:
+                self._shutdown()
+            except:
+                pass
+            self.onDisconnect()
+
+    def _shudown(self):
+        self.connection.socket.shutdown(socket.SHUT_RDWR)
+
+    def reconnect(self):
+        self.disconnect()
+        self.connected = True
+        thread.start_new_thread(self._forceConnect, ())
+
+    def _forceConnect(self):
+        self.connect(True)
 
     def _getUser(self, nick):
         if not nick.lower() in self.users.keys(): self.users[nick.lower()] = TinychatUser(nick)
         return self.users[nick.lower()]
+
+    def adminsay(self, msg):
+        self._sendCommand("owner_run",[u"notice" + msg.replace(" ", "%20")])
+        self._chatlog("*[" + str(self.nick) + "] " + msg.replace(" ", "%20"))
 
     def _decodeMessage(self, msg):
         chars = msg.split(",")
@@ -257,6 +310,28 @@ class TinychatRoom():
     def close(self, nick):
         self._sendCommand("owner_run", [ u"_close" + nick])
 
+    def ban(self, nick):
+        self._sendCommand("kick",[ u"" + nick, self._getUser(nick).id])
+
+    def forgive(self, userid):
+        self._sendCommand("forgive", [u"" + str(userid)])
+
+    def forgiveName(self, n):
+        self.forgiveQueue.append(n.lower())
+        self.banlist()
+
+    def playYoutube(self, video):
+        self.say("/mbs youTube " + str(video) + " 0")
+
+    def stopYoutube(self):
+        self.say("/mbc youTube")
+
+    def playSoundcloud(self, track):
+        self.say("/mbs soundCloud " + str(track) + " 0")
+
+    def stopSoundcloud(self):
+        self.say("/mbc soundCloud")
+
     def cycleColor(self):
         try:
             i = TINYCHAT_COLORS.index(self.color)
@@ -273,6 +348,12 @@ class TinychatRoom():
 
     def onJoin(self, user):
         if self.echo: print(self.room + ": " + user.nick + " entered the room.")
+
+    def onQuit(self, user):
+        if self.echo: print(self.room + ": " + user.nick + " left the room.")
+
+    def onBan(self, user):
+        if self.echo: print(self.room + ": " + user.nick + " was banned.")
 
     def onRegister(self, user):
         if self.echo: print("You have connected to " + self.room + ".")
@@ -291,6 +372,15 @@ class TinychatRoom():
 
     def onPM(self, user, message):
         if self.echo: message.printFormatted()
+
+    def onNickChange(self, new, old, user):
+        if self.echo: print(self.room + ": " + old + " changed nickname to " + new + ".")
+
+    def onNickTaken(self, nick):
+        if self.echo: print("Nick in use, please set a different one")
+
+    def onDisconnect(self):
+        if self.echo: print("You have disconnected from " + self.room + ".")
 
     def _chatlog(self, msg):
         if self.echo2: print(msg)
@@ -424,14 +514,29 @@ if __name__ == "__main__":
                     if cmd.lower() == "publish":
                         room._sendCreateStream()
                         room._sendPublish()
+                    elif cmd.lower() == "say":
+                        room.say(par)
                     elif cmd.lower() == "cam":
-                        #room.bauth()
                         room.createStream()
-                        room.publish()
-                    elif cmd.lower() == "pub":
                         room.publish()
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
+                    elif cmd.lower() == "list":
+                        print("User list:")
+                        print("---")
+                        users = room.users
+                        for user in users.keys():
+                            user = users[user]
+                            print("Nick:\t" + str(user.nick))
+                            print("User ID:\t" + str(user.id))
+                            print("Color:\t" + str(user.color))
+                            m = None
+                            if user.lastMsg != None: m = user.lastMsg.msg
+                            print("Last Message:\t" + str(m))
+                            print("Mod:\t" + str(user.oper))
+                            print("Admin:\t" + str(user.admin))
+                            print("Account Name:\t" + str(user.accountName))
+                            print("---")
                     elif cmd.lower() == "pm":
                         if len(pars) > 1:
                             room.pm(" ".join(pars[1:]), pars[0])
@@ -443,28 +548,26 @@ if __name__ == "__main__":
                         room.cycleColor()
                     elif cmd.lower() == "close":
                         room.close(par)
-                    # elif cmd.lower() == "ban":
-                    #     room.ban(par)
-                    # elif cmd.lower() == "quit":
-                    #     room.disconnect()
-                    # elif cmd.lower() == "reconnect":
-                    #     room.reconnect()
-                    # elif cmd.lower() == "playyoutube":
-                    #     room.playYoutube(par)
-                    # elif cmd.lower() == "stopyoutube":
-                    #     room.stopYoutube()
-                    # elif cmd.lower() == "playsoundcloud":
-                    #     room.playSoundcloud(par)
-                    # elif cmd.lower() == "stopsoundcloud":
-                    #     room.stopSoundcloud()
-                    # elif cmd.lower() == "isop":
-                    #     print(room._isOp())
-                    # elif cmd.lower() == "banlist":
-                    #     room.banlist()
-                    # elif cmd.lower() == "forgive":
-                    #     room.forgive(par)
-                    # elif cmd.lower() == "forgivename":
-                    #     room.forgiveName(par)
+                    elif cmd.lower() == "ban":
+                        room.ban(par)
+                    elif cmd.lower() == "quit":
+                        room.disconnect()
+                    elif cmd.lower() == "reconnect":
+                        room.reconnect()
+                    elif cmd.lower() == "playyoutube":
+                        room.playYoutube(par)
+                    elif cmd.lower() == "stopyoutube":
+                        room.stopYoutube()
+                    elif cmd.lower() == "playsoundcloud":
+                        room.playSoundcloud(par)
+                    elif cmd.lower() == "stopsoundcloud":
+                        room.stopSoundcloud()
+                    elif cmd.lower() == "banlist":
+                        room.banlist()
+                    elif cmd.lower() == "forgive":
+                        room.forgive(par)
+                    elif cmd.lower() == "forgivename":
+                        room.forgiveName(par)
                     elif cmd.lower() == "topic":
                         room.setTopic(par)
             else:
