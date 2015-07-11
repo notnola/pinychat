@@ -482,6 +482,7 @@ class TinychatRoom():
                 'Connection': 'keep-alive'}
         mills = int(round(time.time() * 1000))
         url = "http://tinychat.com/cauth?room="+self.room+"&t="+str(mills)
+        print(url)
         r = self.s.request(method="GET", url=url, headers=headers)
         return r.text.split('{"cookie":"')[1].split('"}')[0]
 
