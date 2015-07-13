@@ -10,7 +10,7 @@ AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
 
 LOG_BASE_DIRECTORY = "log/"
-DEBUG_CONSOLE = False
+DEBUG_CONSOLE = True
 DEBUG_LOG = False
 CHAT_LOGGING = False # do not enable here and bot
 
@@ -491,7 +491,8 @@ class TinychatRoom():
         raw = self.s.get(url)
         if 'key":"' in raw.text:
             r = raw.text.split('key":"')[1].split('"')[0]
-            self._sendCommand("cauth", [u"" + r])
+            rr = r.replace("\\", "")
+            self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
     room = TinychatRoom(raw_input("Enter room name: "), raw_input("Enter username (optional): "), raw_input("Enter nickname (optional): "), raw_input("Enter password (optional): "))
@@ -517,9 +518,6 @@ if __name__ == "__main__":
                         room._sendPublish()
                     elif cmd.lower() == "say":
                         room.say(par)
-                    elif cmd.lower() == "cam":
-                        room.createStream()
-                        room.publish()
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
                     elif cmd.lower() == "list":
@@ -571,5 +569,7 @@ if __name__ == "__main__":
                         room.forgiveName(par)
                     elif cmd.lower() == "topic":
                         room.setTopic(par)
+                    elif cmd.lower() == "adminsay":
+                        room.adminsay(par)
             else:
                 room.say(msg)
