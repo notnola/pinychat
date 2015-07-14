@@ -10,7 +10,7 @@ AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
 
 LOG_BASE_DIRECTORY = "log/"
-DEBUG_CONSOLE = True
+DEBUG_CONSOLE = False
 DEBUG_LOG = False
 CHAT_LOGGING = False # do not enable here and bot
 
