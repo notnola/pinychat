@@ -12,7 +12,7 @@ SILENT_DELAY_SECONDS = 300
 MOD_ONLY_COMMANDS = ["yt", "cyt", "sc", "csc", "addbanword", "removebanword", "addbannick", "removebannick", "topic"] # automatically includs all youtube soundboard commands, so no need to add those
 SUPER_PRIV_COMMANDS = ["supertest", "kick", "ban", "keeptopic", "say", "stopvotekick", "nuke"]
 
-PRIV_USERNAMES = [""] # defaults, these are
+PRIV_USERNAMES = ["notreallynola"] # defaults, these are
 PRIV_FILE = "priv_users"
 
 BANNED_STRINGS = []

@@ -321,7 +321,8 @@ class TinychatRoom():
         self.banlist()
 
     def playYoutube(self, video):
-        self.say("/mbs youTube " + str(video) + " 0")
+        yt = video.split("?v=")[1][:11]
+        self.say("/mbs youTube " + str(yt) + " 0")
 
     def stopYoutube(self):
         self.say("/mbc youTube")
