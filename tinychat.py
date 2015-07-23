@@ -485,7 +485,7 @@ class TinychatRoom():
         url = "http://tinychat.com/cauth?room="+self.room+"&t="+str(mills)
         print(url)
         r = self.s.request(method="GET", url=url, headers=headers)
-        return r.text.split('{"cookie":"')[1].split('"}')[0]
+        return r.text.split('{"cookie":"')[1].split('"')[0]
 
     def sendCauth(self, userID):
         url = "http://tinychat.com/api/captcha/check.php?room=tinychat^" + self.room + "&guest_id=" + self.userID
