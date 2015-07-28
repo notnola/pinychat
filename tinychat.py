@@ -5,7 +5,6 @@ import os
 import sys
 import time
 import socket
-import datetime
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -25,7 +24,7 @@ else:
     import thread
     start_new_thread = thread.start_new_thread
 
-current_time = str(datetime.timedelta(seconds=666))
+current_time = time.strftime("%H:%M:%S")
 
 
 TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
@@ -325,7 +324,10 @@ class TinychatRoom():
         self.banlist()
 
     def playYoutube(self, video):
-        yt = video.split("?v=")[1][:11]
+        try:
+            yt = video.split(".be/")[1][:11]
+        except:
+            yt = video.split("?v=")[1][:11]
         self.say("/mbs youTube " + str(yt) + " 0")
 
     def stopYoutube(self):
@@ -396,10 +398,6 @@ class TinychatRoom():
             logfile = open(d + "chatroom.log", "a")
             logfile.write(msg + "\n")
             logfile.close()
-
-    def _getUser(self, nick):
-        if not nick.lower() in self.users.keys(): self.users[nick.lower()] = TinychatUser(nick)
-        return self.users[nick.lower()]
 
     def _sendCreateStream(self):
         self._sendCommand("bauth", [self.__getBauth()])
