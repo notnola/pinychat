@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import socket
+import webbrowser
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -485,8 +486,6 @@ class TinychatRoom():
         return r.text.split('{"cookie":"')[1].split('"')[0]
 
     def __getRecaptcha(self):
-
-
         url = "http://tinychat.com/cauth/captcha"
         r = self.s.request(method="GET", url=url)
         if '"need_to_solve_captcha":0' in r.text:
@@ -496,8 +495,8 @@ class TinychatRoom():
             self._listen()
         else:
             token = r.text.split('"token":"')[1].split('"')[0]
-            print("Please click this link to solve captcha\n "
-                  "http://tinychat.com/cauth/recaptcha?token=" + token)
+            uurl = ("http://tinychat.com/cauth/recaptcha?token=" + token)
+            webbrowser.open(uurl)
             raw_input("Press any key when captcha has been solved")
             self.connected = True
             self._chatlog(" === Connected to " + str(self.room) + " === ")
