@@ -124,10 +124,7 @@ class TinychatRoom():
             self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
             try:
                 self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
-                self.connected = True
-                self._chatlog(" === Connected to " + str(self.room) + " === ")
-                self.onConnect()
-                self._listen()
+                self.__getRecaptcha()
             except Exception as e:
                 debugPrint("FAILED TO CONNECT", self.room)
                 self.onConnectFail()
@@ -412,8 +409,6 @@ class TinychatRoom():
         self.connection.writer.writepublish(msg)
         self.connection.writer.flush()
 
-
-
     def __authHTTP(self): #todo - Rework this Funtions
         self.headers = {'Host': 'tinychat.com',
                         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
@@ -488,6 +483,26 @@ class TinychatRoom():
         print(url)
         r = self.s.request(method="GET", url=url, headers=headers)
         return r.text.split('{"cookie":"')[1].split('"')[0]
+
+    def __getRecaptcha(self):
+
+
+        url = "http://tinychat.com/cauth/captcha"
+        r = self.s.request(method="GET", url=url)
+        if '"need_to_solve_captcha":0' in r.text:
+            self.connected = True
+            self._chatlog(" === Connected to " + str(self.room) + " === ")
+            self.onConnect()
+            self._listen()
+        else:
+            token = r.text.split('"token":"')[1].split('"')[0]
+            print("Please click this link to solve captcha\n "
+                  "http://tinychat.com/cauth/recaptcha?token=" + token)
+            raw_input("Press any key when captcha has been solved")
+            self.connected = True
+            self._chatlog(" === Connected to " + str(self.room) + " === ")
+            self.onConnect()
+            self._listen()
 
     def sendCauth(self, userID):
         url = "http://tinychat.com/api/captcha/check.php?room=tinychat^" + self.room + "&guest_id=" + self.userID
