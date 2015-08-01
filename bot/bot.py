@@ -167,7 +167,7 @@ class TinychatBot(tinychat.TinychatRoom):
 			self.voting = None
 			self.voteTime = None
 			self.adminsay("Booting Tinychat Bot - Stand by!")
-			self.adminsay("http://github.com/notnola/pinychat_bot")
+			self.adminsay("http://github.com/notnola/pinychat")
 		else:
 			if self._getUser(new).accountName == None:
 				self.identify(new, False, True)
