@@ -685,7 +685,7 @@ room.lockTopic = False
 room.voting = None
 room.chatlogging = True
 room.receivedMessageTime = time.time()
-thread.start_new_thread(room.connect, ())
+thread.start_new_thread(room._recaptcha, ())
 thread.start_new_thread(room.idle, ())
 while not room.connected: time.sleep(1)
 while room.connected:
