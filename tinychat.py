@@ -97,7 +97,6 @@ class TinychatRoom():
         self.pageurl = "http://tinychat.com/" + room                    # Definging Tinychat's Room HTTP URL
         self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0632.swf?version=1.0.0.0632/[[DYNAMIC]]/8" #static
         self.flashver = "WIN 16,0,0,257"                                # static
-        self.timecookie = self.__getEncMills()
         self.connected = False
         # self.queue = []
         self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
@@ -108,7 +107,27 @@ class TinychatRoom():
         self.chatlogging = CHAT_LOGGING
         self.userID = None
         self.forgiveQueue = []
+        self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
 
+    def _recaptcha(self):
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'DNT': 1,
+                    'Connection': 'keep-alive'}
+        url = "http://tinychat.com/cauth/captcha"
+        r = self.s.request(method="GET", url=url, headers=headers, cookies=self.cookies)
+        print(r.text)
+        if '"need_to_solve_captcha":0' in r.text:
+            self.timecookie = self.__getEncMills()
+            self.connect()
+        else:
+            token = r.text.split('"token":"')[1].split('"')[0]
+            print("Please click this link to solve captcha\n "
+                  "http://tinychat.com/cauth/recaptcha?token=" + token)
+            raw_input("Press any key when captcha has been solved")
+            self.timecookie = self.__getEncMills()
+            self.connect()
 
     def connect(self, force=False):
         if not self.connected or force:
@@ -120,11 +139,12 @@ class TinychatRoom():
             debugPrint("App: " + str(self.app), str(self.room))
             debugPrint("Room: " + str(self.room), str(self.room))
             debugPrint("AutoOp: " + str(self.autoop), str(self.room))
-            debugPrint("Time Cookie: " + str(self.timecookie), str(self.room))
-            self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
             try:
                 self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
-                self.__getRecaptcha()
+                self.connected = True
+                self._chatlog(" === Connected to " + str(self.room) + " === ")
+                self.onConnect()
+                self._listen()
             except Exception as e:
                 debugPrint("FAILED TO CONNECT", self.room)
                 self.onConnectFail()
@@ -240,7 +260,7 @@ class TinychatRoom():
                 pass
             self.onDisconnect()
 
-    def _shudown(self):
+    def _shutdown(self):
         self.connection.socket.shutdown(socket.SHUT_RDWR)
 
     def reconnect(self):
@@ -480,27 +500,8 @@ class TinychatRoom():
                 'Connection': 'keep-alive'}
         mills = int(round(time.time() * 1000))
         url = "http://tinychat.com/cauth?room="+self.room+"&t="+str(mills)
-        print(url)
-        r = self.s.request(method="GET", url=url, headers=headers)
+        r = self.s.request(method="GET", url=url, headers=headers, cookies=self.cookies)
         return r.text.split('{"cookie":"')[1].split('"')[0]
-
-    def __getRecaptcha(self):
-        url = "http://tinychat.com/cauth/captcha"
-        r = self.s.request(method="GET", url=url)
-        if '"need_to_solve_captcha":0' in r.text:
-            self.connected = True
-            self._chatlog(" === Connected to " + str(self.room) + " === ")
-            self.onConnect()
-            self._listen()
-        else:
-            token = r.text.split('"token":"')[1].split('"')[0]
-            print("Please click this link to solve captcha\n "
-                  "http://tinychat.com/cauth/recaptcha?token=" + token)
-            raw_input("Press any key when captcha has been solved")
-            self.connected = True
-            self._chatlog(" === Connected to " + str(self.room) + " === ")
-            self.onConnect()
-            self._listen()
 
     def sendCauth(self, userID):
         url = "http://tinychat.com/api/captcha/check.php?room=tinychat^" + self.room + "&guest_id=" + self.userID
@@ -512,7 +513,7 @@ class TinychatRoom():
 
 if __name__ == "__main__":
     room = TinychatRoom(raw_input("Enter room name: "), raw_input("Enter username (optional): "), raw_input("Enter nickname (optional): "), raw_input("Enter password (optional): "))
-    start_new_thread(room.connect, ())
+    start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
         msg = raw_input()
