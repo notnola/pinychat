@@ -340,10 +340,13 @@ class TinychatRoom():
 
     def playYoutube(self, video):
         try:
-            yt = video.split(".be/")[1][:11]
+            try:
+                yt = video.split(".be/")[1][:11]
+            except:
+                yt = video.split("?v=")[1][:11]
+            self.say("/mbs youTube " + str(yt) + " 0")
         except:
-            yt = video.split("?v=")[1][:11]
-        self.say("/mbs youTube " + str(yt) + " 0")
+            self.adminsay("Something went wrong, maybe that link was invalid. Try again.")
 
     def stopYoutube(self):
         self.say("/mbc youTube")
