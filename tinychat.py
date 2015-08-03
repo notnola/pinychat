@@ -329,7 +329,10 @@ class TinychatRoom():
         self._sendCommand("owner_run", [ u"_close" + nick])
 
     def ban(self, nick):
-        self._sendCommand("kick",[ u"" + nick, self._getUser(nick).id])
+        if nick not in self.users.keys():
+            self.adminsay("That user is not in the room. When in doubt, tab it out!")
+        else:
+            self._sendCommand("kick", [u"" + nick, self._getUser(nick).id])
 
     def forgive(self, userid):
         self._sendCommand("forgive", [u"" + str(userid)])
