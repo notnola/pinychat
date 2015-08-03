@@ -6,6 +6,7 @@ import sys
 import time
 import socket
 import webbrowser
+from datetime import datetime
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -24,9 +25,6 @@ else:
     get_input = raw_input
     import thread
     start_new_thread = thread.start_new_thread
-
-current_time = time.strftime("%H:%M:%S")
-
 
 TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
                    "#1d82eb", "#919104", "#a990", "#b9807f", "#7bb224", "#1965b6", "#32a5d9"]
@@ -192,10 +190,10 @@ class TinychatRoom():
                                             self.onUserInfo(user)
                                 else:
                                     self.onPM(user, message)
-                                    self._chatlog(current_time + " (private) [" + str(user.nick) + "] " + str(message.msg))
+                                    self._chatlog(str(datetime.now().time()) + " (private) [" + str(user.nick) + "] " + str(message.msg))
                             else:
                                 self.onMessage(user, message)
-                            self._chatlog(current_time + " [" + str(user.nick) + "] " + str(message.msg))
+                            self._chatlog(str(datetime.now().time()) + " [" + str(user.nick) + "] " + str(message.msg))
                     elif cmd == "registered":
                         user = self._getUser(pars[0])
                         user.id = pars[1]
@@ -206,7 +204,7 @@ class TinychatRoom():
                         user = self._getUser(pars[1])
                         user.id = pars[0]
                         self.onJoin(user)
-                        self._chatlog(current_time + " " + (user.nick) + " joined " + str(self.room) + ".")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " joined " + str(self.room) + ".")
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
                             user = self._getUser(pars[i*2 + 2])
@@ -217,7 +215,7 @@ class TinychatRoom():
                     elif cmd == "topic":
                         self.topic = pars[0].encode("ascii", "ignore")
                         self.onTopic(self.topic)
-                        self._chatlog(current_time + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
+                        self._chatlog(str(datetime.now().time()) + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
                     elif cmd == "nick":
                         user = self._getUser(pars[0])
                         old = user.nick
@@ -226,10 +224,10 @@ class TinychatRoom():
                             del self.users[old]
                             self.users[user.nick] = user
                         self.onNickChange(user.nick, old, user)
-                        self._chatlog(current_time + " " + (old) + " is now known as " + str(user.nick) + ".")
+                        self._chatlog(str(datetime.now().time()) + " " + (old) + " is now known as " + str(user.nick) + ".")
                     elif cmd == "notice":
                         if str(pars[0]) == "avon":
-                            print(current_time + " " + (pars[2]) + " is now broadcasting.")
+                            print(str(datetime.now().time()) + " " + (pars[2]) + " is now broadcasting.")
                             user = self._getUser(pars[2])
                             user.avon = True
                     elif cmd == "avons":
@@ -240,11 +238,11 @@ class TinychatRoom():
                         user = self.users[pars[0].lower()]
                         del self.users[pars[0].lower()]
                         self.onQuit(user)
-                        self._chatlog(current_time + " " + (user.nick) + " left.")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " left.")
                     elif cmd == "kick":
                         user = self.users[pars[1].lower()]
                         self.onBan(user)
-                        self._chatlog(current_time + " " + (user.nick) + " was banned.")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " was banned.")
                     elif cmd == "oper":
                         user = self._getUser(pars[1])
                         user.oper = True
