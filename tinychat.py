@@ -26,8 +26,38 @@ else:
     import thread
     start_new_thread = thread.start_new_thread
 
-TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
-                   "#1d82eb", "#919104", "#a990", "#b9807f", "#7bb224", "#1965b6", "#32a5d9"]
+# COLORNAME and COLORNUMBER list (the commented one)
+# Must be in alphabetical order for color numbers to work
+COLORS_DICT = { 
+"blue": "#1d82eb", #0
+"brass": "#919104", #1
+"sky blue": "#32a5d9", #2
+"dark blue": "#1965b6", #3
+"dark gold": "#a78901", #4
+"dark purple": "#5c1a7a", #5
+"gold gray": "#a08f23", #6
+"green": "#487d21", #7
+"lime": "#7bb224", #8
+"lime gray": "#7db257", #9
+"maroon": "#821615", #10
+"pink": "#c356a3", #11
+"pink gray": "#b9807f", #12
+"purple": "#9d5bb5", #13
+"red": "#c53332", #14
+"turqouise": "#00a990", #15
+}
+    
+TINYCHAT_COLORS = []
+firstRun = 1
+colorNames = sorted(COLORS_DICT.keys())
+for i in colorNames: # Dicts are unordered, this orders them and appends to TINYCHAT_COLORS so that the color numbers work
+    if firstRun == 0:
+        x += 1
+    else:
+        x = 0
+    TINYCHAT_COLORS.append( COLORS_DICT[colorNames[x]] )
+    if x == 0:
+        firstRun = 0
 
 
 def debugPrint(msg, room="unknown_room"):
@@ -368,6 +398,44 @@ class TinychatRoom():
         i = (i + 1) % len(TINYCHAT_COLORS)
         self.color = TINYCHAT_COLORS[i]
 
+    def selectColor(self, inputcolor):
+        # Usage: 
+            # /color COLORNAME 
+            # /color COLORNUMBER
+            # See COLORS_DICT definition for names and numbers
+        currentColor = "black"
+        colorBlack = 0
+        newColor = inputcolor
+        for i in COLORS_DICT.keys(): # Get current color name
+            if COLORS_DICT[i] == self.color:
+                currentColor = i
+                break
+        if inputcolor == "black" or inputcolor == "00":
+            colorBlack = 1
+            newColor = "black"
+        colorInfo = "\nCurrent color: " + currentColor + "\nNew color    : " + newColor + "\n"
+        invalidColor = "Invalid color"
+        if colorBlack == 1:
+            self.color = "#000000"
+            print(colorInfo)
+            colorBlack = 0
+        elif inputcolor in COLORS_DICT.keys(): # If exising color name
+            self.color = COLORS_DICT[inputcolor]
+            print(colorInfo)
+        else: # If existing color number
+            try:
+                i = int(inputcolor)
+            except:
+                print(invalidColor)
+                return
+            newColor = colorNames[i]
+            colorInfo = "\nCurrent color: " + currentColor + "\nNew color    : " + newColor + "\n"
+            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number
+                print(colorInfo)
+                self.color = TINYCHAT_COLORS[i]
+            else:
+                print(invalidColor)
+        
     def onConnect(self):
         if self.echo: print("You have connected to Tinychat.")
 
@@ -565,7 +633,10 @@ if __name__ == "__main__":
                     elif cmd.lower() == "nick":
                         room.setNick(par)
                     elif cmd.lower() == "color":
-                        room.cycleColor()
+                        if len(par) > 0:
+                            room.selectColor(par)
+                        else:
+                            room.cycleColor()
                     elif cmd.lower() == "close":
                         room.close(par)
                     elif cmd.lower() == "ban":
