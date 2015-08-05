@@ -2,7 +2,7 @@ import rtmp_protocol
 import requests
 import random
 import os
-import sys
+import sys, getopt
 import time
 import socket
 import webbrowser
@@ -25,6 +25,26 @@ else:
     get_input = raw_input
     import thread
     start_new_thread = thread.start_new_thread
+    
+# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD
+roomnameArg = 0
+nicknameArg = 0
+usernameArg = 0
+passwordArg = 0
+
+options, args = getopt.getopt(sys.argv[1:],"r:n:u:p:",["info", "help"])
+for o, a in options:
+    if o == '-r':
+        roomnameArg = a
+    elif o == '-n':
+        nicknameArg = a
+    elif o == '-u':
+        usernameArg = a
+    elif o == '-p':
+        passwordArg = a
+    elif o == "--info" or o == "--help":
+        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD\n")
+        raise SystemExit
 
 # COLORNAME and COLORNUMBER list (the commented one)
 # Must be in alphabetical order for color numbers to work
@@ -332,9 +352,12 @@ class TinychatRoom():
         self._chatlog("[" + str(self.nick) + "] " + msg)
 
     def pm(self, msg, recipient):
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
-        self._chatlog("(@" + recipient +  ") [" + str(self.nick) + "] " + msg)
+        try:
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
+            self._chatlog("(@" + recipient +  ") [" + str(self.nick) + "] " + msg)
+        except:
+            print("\n--- Error sending PM. User might not exist\n")
 
     def userinfo(self, recipient):
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
@@ -584,7 +607,16 @@ class TinychatRoom():
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
-    room = TinychatRoom(raw_input("Enter room name: "), raw_input("Enter username (optional): "), raw_input("Enter nickname (optional): "), raw_input("Enter password (optional): "))
+    if roomnameArg == 0:
+        roomnameArg = raw_input("Enter room name: ")
+    if nicknameArg == 0:
+        nicknameArg = raw_input("Enter nickname (optional): ")
+    if usernameArg == 0:
+       usernameArg = raw_input("Enter username (optional): ")
+    if passwordArg == 0:
+       passwordArg = raw_input("Enter password (optional): ")
+
+    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
