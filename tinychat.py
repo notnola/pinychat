@@ -31,8 +31,9 @@ roomnameArg = 0
 nicknameArg = 0
 usernameArg = 0
 passwordArg = 0
+colorArg = 0
 
-options, args = getopt.getopt(sys.argv[1:],"r:n:u:p:",["info", "help"])
+options, args = getopt.getopt(sys.argv[1:],"r:n:u:p:c:",["info", "help"])
 for o, a in options:
     if o == '-r':
         roomnameArg = a
@@ -42,8 +43,10 @@ for o, a in options:
         usernameArg = a
     elif o == '-p':
         passwordArg = a
+    elif o == '-c':
+        colorArg = a
     elif o == "--info" or o == "--help":
-        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD\n")
+        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR\n")
         raise SystemExit
 
 # COLORNAME and COLORNUMBER list (the commented one)
@@ -64,7 +67,7 @@ COLORS_DICT = {
 "pink gray": "#b9807f", #12
 "purple": "#9d5bb5", #13
 "red": "#c53332", #14
-"turqouise": "#00a990", #15
+"turquoise": "#00a990", #15
 }
     
 TINYCHAT_COLORS = []
@@ -120,7 +123,7 @@ class TinychatUser():
 
 class TinychatRoom():
     # Manages a single room connection
-    def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
+    def __init__(self, room, username=None, nick=None, passwd=None, nickColor=None, roomPassword=None):
         self.room = room
         if username == None:
             self.username = ""
@@ -148,6 +151,13 @@ class TinychatRoom():
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
+        
+        # Set initial color (draft) - see section "Autoset initial color"
+        # if nickColor == 0:
+            # self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
+        # else:
+            # self.color = COLORS_DICT[nickColor]
+        
         self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         self.topic = None
         self.users = {}
@@ -360,8 +370,11 @@ class TinychatRoom():
             print("\n--- Error sending PM. User might not exist\n")
 
     def userinfo(self, recipient):
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
+        try:
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
+        except:
+            print("\n--- Error getting user info. User might not exist\n")
 
     def sendUserInfo(self, recipient, info):
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" + self._getUser(recipient).id +"-"+ recipient])
@@ -422,10 +435,17 @@ class TinychatRoom():
         self.color = TINYCHAT_COLORS[i]
 
     def selectColor(self, inputcolor):
-        # Usage: 
-            # /color COLORNAME 
-            # /color COLORNUMBER
-            # See COLORS_DICT definition for names and numbers
+        if inputcolor == "?":
+            print("""\
+Usage: /color [OPTIONS]
+    COLORNAME     Color name i.e. pink
+    COLORNUMBER   Two-digit color number (see "COLORNUMBER list" in source)
+    list          List available colors
+""")
+            return
+        if inputcolor == "list":
+            print("\n--- Available colors: " + (", ".join(COLORS_DICT.keys())) + " ---\n")
+            return
         currentColor = "black"
         colorBlack = 0
         newColor = inputcolor
@@ -436,8 +456,8 @@ class TinychatRoom():
         if inputcolor == "black" or inputcolor == "00":
             colorBlack = 1
             newColor = "black"
-        colorInfo = "\nCurrent color: " + currentColor + "\nNew color    : " + newColor + "\n"
-        invalidColor = "Invalid color"
+        colorInfo = "\n--- New color: " + newColor + " -- (Old color: " + currentColor + ") ---\n"
+        invalidColor = "--- Invalid color ---"
         if colorBlack == 1:
             self.color = "#000000"
             print(colorInfo)
@@ -452,7 +472,7 @@ class TinychatRoom():
                 print(invalidColor)
                 return
             newColor = colorNames[i]
-            colorInfo = "\nCurrent color: " + currentColor + "\nNew color    : " + newColor + "\n"
+            colorInfo = "\n--- New color: " + newColor + " -- (Old color: " + currentColor + ") ---\n"
             if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number
                 print(colorInfo)
                 self.color = TINYCHAT_COLORS[i]
@@ -615,12 +635,20 @@ if __name__ == "__main__":
        usernameArg = raw_input("Enter username (optional): ")
     if passwordArg == 0:
        passwordArg = raw_input("Enter password (optional): ")
+    if colorArg == 0:
+       colorArg = raw_input("Enter color (optional): ")
 
-    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, colorArg, passwordArg)
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
-        msg = raw_input()
+        # Autoset initial color. Just does /color colorArg after connecting. Very lazy and wasteful. 
+        # todo: Instead set color in the init method using its nickColor arg; see section "Set initial color (draft)".
+        if colorArg != 0 and colorArg != "":
+            msg = "/color " + str(colorArg)
+            colorArg = 0
+        else:
+            msg = raw_input()
         if len(msg) > 0:
             if msg[0] == "/":
                 msg = msg[1:]
