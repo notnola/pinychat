@@ -11,11 +11,10 @@ Pinychat requires a few things to work properly:
 
 * 32bit install of Python 2.7
 * [requests] - https://github.com/kennethreitz/requests 
-    ```sh
-    # pip install requests
-    ```
 * [colorama] - https://github.com/tartley/colorama
+
     ```sh
+    # pip install requests 
     # pip install colorama
     ```
 
