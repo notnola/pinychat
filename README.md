@@ -9,7 +9,9 @@ Pinychat is a Python module that allows you to easily interface with Tinychat.co
 
 Pinychat requires a few things to work properly:
 * 32bit install of Python 2.7
+
 * [requests] - https://github.com/kennethreitz/requests 
+
 * [colorama] - https://github.com/tartley/colorama
 
     ```sh
