@@ -138,7 +138,7 @@ class TinychatUser():
 
 class TinychatRoom():
     # Manages a single room connection
-    def __init__(self, room, username=None, nick=None, passwd=None, nickColor=None, roomPassword=None):
+    def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
         self.room = room
         if username == None:
             self.username = ""
@@ -687,7 +687,7 @@ if __name__ == "__main__":
     if colorArg == 0:
        colorArg = raw_input("Enter color (optional): ")
 
-    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, colorArg, passwordArg)
+    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
