@@ -1,4 +1,4 @@
-# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD
+# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR
 import rtmp_protocol
 import requests
 import random
@@ -10,18 +10,7 @@ import webbrowser
 from datetime import datetime
 import colorama
 from colorama import Fore, Back, Style
-
-colorama.init() # This might end up somewhere else
-# nicks
-ooO = Style.BRIGHT
-Ooo = Style.RESET_ALL
-# status/error
-ssS = Fore.YELLOW
-    #ssS = Style.BRIGHT
-Sss = Style.RESET_ALL
-# PM
-ppP = Fore.BLACK + Back.YELLOW
-Ppp = Style.RESET_ALL
+from os import system
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -42,6 +31,8 @@ else:
     start_new_thread = thread.start_new_thread
 
 timeformat = "%H:%M:%S"
+
+# Argument handling
 roomnameArg = 0
 nicknameArg = 0
 usernameArg = 0
@@ -84,7 +75,6 @@ COLORS_DICT = {
 "red": "#c53332", #14
 "turquoise": "#00a990", #15
 }
-    
 TINYCHAT_COLORS = []
 firstRun = 1
 colorNames = sorted(COLORS_DICT.keys())
@@ -97,6 +87,13 @@ for i in colorNames: # Dicts are unordered, this orders them and appends to TINY
     if x == 0:
         firstRun = 0
 
+def setWindowTitle(title=""): #todo: move this
+    title = str(title)
+    titlePrefix = "pinychat: " 
+    if os.name == "nt":
+        system("title " + titlePrefix + title)
+    else:
+        system("echo -e '\033]2;'" + titlePrefix + title + "'\007'")
 
 def debugPrint(msg, room="unknown_room"):
     if DEBUG_CONSOLE:
@@ -263,9 +260,16 @@ class TinychatRoom():
                                             user.accountName = ac
                                             if self.room == ac: user.admin = True
                                             self.onUserInfo(user)
+                                        message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
+                                        setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
+                                        global lastUserinfo
+                                        lastUserinfo = user.nick
                                 else:
                                     self.onPM(user, message)
                                     self._chatlog(ppP+" PM "+Ppp + " " + datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
+                                    global lastPM
+                                    lastPM = str(user.nick)
+                                    setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:25] + "...")
                             else:
                                 self.onMessage(user, message)
                             self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
@@ -377,6 +381,18 @@ class TinychatRoom():
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
 
     def pm(self, msg, recipient):
+        if recipient == "?":
+            print(ssS+"""\
+Description: Send PM.
+Usage: /pm [OPTIONS]
+    USER MESSAGE    PM a MESSAGE to USER
+    
+    Options for USER:
+    @   Latest PM
+    @u  Latest userinfo request
+    !   Clear (no MESSAGE needed)
+"""+Sss)
+            return
         try:
             self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
             self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
@@ -676,6 +692,7 @@ Usage: /color [OPTIONS]
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
+    setWindowTitle()
     if roomnameArg == 0:
         roomnameArg = raw_input("Enter room name: ")
     if nicknameArg == 0:
@@ -688,6 +705,21 @@ if __name__ == "__main__":
        colorArg = raw_input("Enter color (optional): ")
 
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+
+    colorama.init() # todo: move this whole section somewhere else
+    # nicks
+    ooO = Style.BRIGHT
+    Ooo = Style.RESET_ALL
+    # status/error
+    ssS = Fore.YELLOW + Style.BRIGHT
+    Sss = Style.RESET_ALL
+    # PM
+    ppP = Fore.BLACK + Back.YELLOW
+    Ppp = Style.RESET_ALL
+
+    lastPM = ""
+    lastUserinfo = ""
+
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
@@ -735,10 +767,19 @@ if __name__ == "__main__":
                             print("Account Name:\t" + str(user.accountName))
                             print("---"+Sss)
                     elif cmd.lower() == "pm":
-                        if len(pars) > 1:
-                            room.pm(" ".join(pars[1:]), pars[0])
+                        if len(pars) > 0:
+                            pmMsg = " ".join(pars[1:])
+                            pmRecip = pars[0]
+                            if pmRecip == "@":
+                                room.pm(pmMsg, lastPM)
+                            elif pmRecip == "@u":
+                                room.pm(pmMsg, lastUserinfo)
+                            elif pmRecip == "!":
+                                setWindowTitle()
+                            else:
+                                room.pm(pmMsg, pmRecip)
                         else:
-                            print(ssS+"Please supply the recipient's nick as well as the message to send"+Sss)
+                            print(ssS+"Argument required."+Sss)
                     elif cmd.lower() == "nick":
                         room.setNick(par)
                     elif cmd.lower() == "color":
