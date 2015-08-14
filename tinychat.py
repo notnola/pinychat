@@ -272,7 +272,8 @@ class TinychatRoom():
                                     setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:25] + "...")
                             else:
                                 self.onMessage(user, message)
-                            self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
+                            if str(user.nick) not in ignoreList:
+	                            self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
                     elif cmd == "registered":
                         user = self._getUser(pars[0])
                         user.id = pars[1]
@@ -438,6 +439,17 @@ Usage: /time [OPTIONS]
             self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
         except:
             print(ssS+"--- Error getting user info. User might not exist ---"+Sss)
+
+    def ignore(self, user):
+        ignoreList.append(user)
+        print(ssS+"--- Ignored " + user + " ---"+Sss)
+
+    def unignore(self, user):
+        try:
+            ignoreList.remove(user)
+            print(ssS+"--- Unignored " + user + " ---"+Sss)
+        except:
+            return
 
     def sendUserInfo(self, recipient, info):
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" + self._getUser(recipient).id +"-"+ recipient])
@@ -719,6 +731,7 @@ if __name__ == "__main__":
 
     lastPM = ""
     lastUserinfo = ""
+    ignoreList = []
 
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
@@ -750,6 +763,10 @@ if __name__ == "__main__":
                         room.say(par)
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
+                    elif cmd.lower() == "ignore":
+                        room.ignore(par)
+                    elif cmd.lower() == "unignore":
+                        room.unignore(par)
                     elif cmd.lower() == "list":
                         print("User list:")
                         print("---")
