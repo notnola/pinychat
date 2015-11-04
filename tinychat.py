@@ -1,16 +1,12 @@
-# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR
 import rtmp_protocol
 import requests
 import random
 import os
-import sys, getopt
+import sys
 import time
 import socket
 import webbrowser
 from datetime import datetime
-import colorama
-from colorama import Fore, Back, Style
-from os import system
 
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
@@ -30,70 +26,9 @@ else:
     import thread
     start_new_thread = thread.start_new_thread
 
-timeformat = "%H:%M:%S"
+TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
+                   "#1d82eb", "#919104", "#a990", "#b9807f", "#7bb224", "#1965b6", "#32a5d9"]
 
-# Argument handling
-roomnameArg = 0
-nicknameArg = 0
-usernameArg = 0
-passwordArg = 0
-colorArg = 0
-
-options, args = getopt.getopt(sys.argv[1:],"r:n:u:p:c:",["info", "help"])
-for o, a in options:
-    if o == '-r':
-        roomnameArg = a
-    elif o == '-n':
-        nicknameArg = a
-    elif o == '-u':
-        usernameArg = a
-    elif o == '-p':
-        passwordArg = a
-    elif o == '-c':
-        colorArg = a
-    elif o == "--info" or o == "--help":
-        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR\n")
-        raise SystemExit
-
-# COLORNAME and COLORNUMBER list (the commented one)
-# Must be in alphabetical order for color numbers to work
-COLORS_DICT = { 
-"blue": "#1d82eb", #0
-"brass": "#919104", #1
-"sky blue": "#32a5d9", #2
-"dark blue": "#1965b6", #3
-"dark gold": "#a78901", #4
-"dark purple": "#5c1a7a", #5
-"gold gray": "#a08f23", #6
-"green": "#487d21", #7
-"lime": "#7bb224", #8
-"lime gray": "#7db257", #9
-"maroon": "#821615", #10
-"pink": "#c356a3", #11
-"pink gray": "#b9807f", #12
-"purple": "#9d5bb5", #13
-"red": "#c53332", #14
-"turquoise": "#00a990", #15
-}
-TINYCHAT_COLORS = []
-firstRun = 1
-colorNames = sorted(COLORS_DICT.keys())
-for i in colorNames: # Dicts are unordered, this orders them and appends to TINYCHAT_COLORS so that the color numbers work
-    if firstRun == 0:
-        x += 1
-    else:
-        x = 0
-    TINYCHAT_COLORS.append( COLORS_DICT[colorNames[x]] )
-    if x == 0:
-        firstRun = 0
-
-def setWindowTitle(title=""): #todo: move this
-    title = str(title)
-    titlePrefix = "pinychat: " 
-    if os.name == "nt":
-        system("title " + titlePrefix + title)
-    else:
-        system("echo -e '\033]2;'" + titlePrefix + title + "'\007'")
 
 def debugPrint(msg, room="unknown_room"):
     if DEBUG_CONSOLE:
@@ -163,13 +98,6 @@ class TinychatRoom():
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
-        
-        # Set initial color (draft) - see section "Autoset initial color"
-        # if nickColor == 0:
-            # self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
-        # else:
-            # self.color = COLORS_DICT[nickColor]
-        
         self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         self.topic = None
         self.users = {}
@@ -260,20 +188,12 @@ class TinychatRoom():
                                             user.accountName = ac
                                             if self.room == ac: user.admin = True
                                             self.onUserInfo(user)
-                                        message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
-                                        setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
-                                        global lastUserinfo
-                                        lastUserinfo = user.nick
                                 else:
                                     self.onPM(user, message)
-                                    self._chatlog(ppP+" PM "+Ppp + " " + datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
-                                    global lastPM
-                                    lastPM = str(user.nick)
-                                    setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:25] + "...")
+                                    self._chatlog(str(datetime.now().time()) + " (private) [" + str(user.nick) + "] " + str(message.msg))
                             else:
                                 self.onMessage(user, message)
-                            if str(user.nick) not in ignoreList:
-	                            self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
+                            self._chatlog(str(datetime.now().time()) + " [" + str(user.nick) + "] " + str(message.msg))
                     elif cmd == "registered":
                         user = self._getUser(pars[0])
                         user.id = pars[1]
@@ -284,7 +204,7 @@ class TinychatRoom():
                         user = self._getUser(pars[1])
                         user.id = pars[0]
                         self.onJoin(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " joined " + str(self.room) + ".")
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
                             user = self._getUser(pars[i*2 + 2])
@@ -295,7 +215,7 @@ class TinychatRoom():
                     elif cmd == "topic":
                         self.topic = pars[0].encode("ascii", "ignore")
                         self.onTopic(self.topic)
-                        self._chatlog(datetime.now().strftime(timeformat) + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
+                        self._chatlog(str(datetime.now().time()) + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
                     elif cmd == "nick":
                         user = self._getUser(pars[0])
                         old = user.nick
@@ -304,10 +224,10 @@ class TinychatRoom():
                             del self.users[old]
                             self.users[user.nick] = user
                         self.onNickChange(user.nick, old, user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (old) + " is now known as " + str(user.nick) + ".")
+                        self._chatlog(str(datetime.now().time()) + " " + (old) + " is now known as " + str(user.nick) + ".")
                     elif cmd == "notice":
                         if str(pars[0]) == "avon":
-                            print(datetime.now().strftime(timeformat) + " " + (pars[2]) + " is now broadcasting.")
+                            print(str(datetime.now().time()) + " " + (pars[2]) + " is now broadcasting.")
                             user = self._getUser(pars[2])
                             user.avon = True
                     elif cmd == "avons":
@@ -318,11 +238,11 @@ class TinychatRoom():
                         user = self.users[pars[0].lower()]
                         del self.users[pars[0].lower()]
                         self.onQuit(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " left.")
                     elif cmd == "kick":
                         user = self.users[pars[1].lower()]
                         self.onBan(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
+                        self._chatlog(str(datetime.now().time()) + " " + (user.nick) + " was banned.")
                     elif cmd == "oper":
                         user = self._getUser(pars[1])
                         user.oper = True
@@ -379,77 +299,16 @@ class TinychatRoom():
 
     def say(self, msg):
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
-        self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
+        self._chatlog("[" + str(self.nick) + "] " + msg)
 
     def pm(self, msg, recipient):
-        if recipient == "?":
-            print(ssS+"""\
-Description: Send PM.
-Usage: /pm [OPTIONS]
-    USER MESSAGE    PM a MESSAGE to USER
-    
-    Options for USER:
-    @   Latest PM
-    @u  Latest userinfo request
-    !   Clear (no MESSAGE needed)
-"""+Sss)
-            return
-        try:
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
-            self._chatlog("(" + ssS+"@"+recipient+Sss +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
-        except:
-            print(ssS+"--- Error sending PM (user not found?) ---"+Sss)
-
-    def setTimeformat(self, newformat):
-        global timeformat
-        newformat = str(newformat)
-        if newformat == "?":
-            print(ssS+"""\
-Description: Sets timestamp format
-Usage: /time [OPTIONS]
-    hmss    00:00:00.00000 (H:M:S.microS)
-    hms     00:00:00 (H:M:S)
-    hm      00:00 (H:M)
-    off     Disable timestamps
-    FORMAT  Custom time format (strftime)
-"""+Sss)
-            return
-        elif newformat == "hmss":
-            timeformat = "%H:%M:%S.%f"
-        elif newformat == "hms":
-            timeformat = "%H:%M:%S"
-        elif newformat == "hm":
-            timeformat = "%H:%M"
-        elif newformat == "off":
-            timeformat = ""
-        else:
-            try:
-                test = datetime.now().strftime(newformat)
-                print("--- Timestamp preview: " + test)
-                if raw_input("--- Enter 'y' to apply: "+Sss) == "y":
-                    timeformat = newformat
-            except:
-                print("--- An error occured ---"+Sss)
-        print(Sss),
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
+        self._chatlog("(@" + recipient +  ") [" + str(self.nick) + "] " + msg)
 
     def userinfo(self, recipient):
-        try:
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
-        except:
-            print(ssS+"--- Error getting user info. User might not exist ---"+Sss)
-
-    def ignore(self, user):
-        ignoreList.append(user)
-        print(ssS+"--- Ignored " + user + " ---"+Sss)
-
-    def unignore(self, user):
-        try:
-            ignoreList.remove(user)
-            print(ssS+"--- Unignored " + user + " ---"+Sss)
-        except:
-            return
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
 
     def sendUserInfo(self, recipient, info):
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" + self._getUser(recipient).id +"-"+ recipient])
@@ -508,53 +367,6 @@ Usage: /time [OPTIONS]
             i = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         i = (i + 1) % len(TINYCHAT_COLORS)
         self.color = TINYCHAT_COLORS[i]
-
-    def selectColor(self, inputcolor):
-        if inputcolor == "?":
-            print(ssS+"""\
-Description: Sets your nick color
-Usage: /color [OPTIONS]
-    COLORNAME     Color name i.e. pink
-    COLORNUMBER   Two-digit color number (see "COLORNUMBER list" in source)
-    list          List available colors
-"""+Sss)
-            return
-        if inputcolor == "list":
-            print(ssS+"--- Available colors: " + (", ".join(COLORS_DICT.keys())) + " ---"+Sss)
-            return
-        currentColor = "black"
-        colorBlack = 0
-        newColor = inputcolor
-        for i in COLORS_DICT.keys(): # Get current color name
-            if COLORS_DICT[i] == self.color:
-                currentColor = i
-                break
-        if inputcolor == "black" or inputcolor == "00":
-            colorBlack = 1
-            newColor = "black"
-        colorInfo = ssS+"--- Color: " + newColor + " (Old: " + currentColor + ") ---"+Sss
-        invalidColor = ssS+"--- Invalid color ---"+Sss
-        if colorBlack == 1:
-            self.color = "#000000"
-            print(colorInfo)
-            colorBlack = 0
-        elif inputcolor in COLORS_DICT.keys(): # If exising color name
-            self.color = COLORS_DICT[inputcolor]
-            print(colorInfo)
-        else: # If existing color number
-            try:
-                i = int(inputcolor)
-            except:
-                print(invalidColor)
-                return
-            newColor = colorNames[i]
-            colorInfo = ssS+"--- Color: " + newColor + " (Old: " + currentColor + ") ---"+Sss
-            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number
-                print(colorInfo)
-                self.color = TINYCHAT_COLORS[i]
-            else:
-                print(invalidColor)
-        print(Sss),
 
     def onConnect(self):
         if self.echo: print("You have connected to Tinychat.")
@@ -704,45 +516,11 @@ Usage: /color [OPTIONS]
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
-    setWindowTitle()
-    if roomnameArg == 0:
-        roomnameArg = raw_input("Enter room name: ")
-    if nicknameArg == 0:
-        nicknameArg = raw_input("Enter nickname (optional): ")
-    if usernameArg == 0:
-       usernameArg = raw_input("Enter username (optional): ")
-    if passwordArg == 0:
-       passwordArg = raw_input("Enter password (optional): ")
-    if colorArg == 0:
-       colorArg = raw_input("Enter color (optional): ")
-
-    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
-
-    colorama.init() # todo: move this whole section somewhere else
-    # nicks
-    ooO = Style.BRIGHT
-    Ooo = Style.RESET_ALL
-    # status/error
-    ssS = Fore.YELLOW + Style.BRIGHT
-    Sss = Style.RESET_ALL
-    # PM
-    ppP = Fore.BLACK + Back.YELLOW
-    Ppp = Style.RESET_ALL
-
-    lastPM = ""
-    lastUserinfo = ""
-    ignoreList = []
-
+    room = TinychatRoom(raw_input("Enter room name: "), raw_input("Enter username (optional): "), raw_input("Enter nickname (optional): "), raw_input("Enter password (optional): "))
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
-        # Autoset initial color. Just does /color colorArg after connecting. Very lazy and wasteful. 
-        # todo: Instead set color in the init method using its nickColor arg; see section "Set initial color (draft)".
-        if colorArg != 0 and colorArg != "":
-            msg = "/color " + str(colorArg)
-            colorArg = 0
-        else:
-            msg = raw_input()
+        msg = raw_input()
         if len(msg) > 0:
             if msg[0] == "/":
                 msg = msg[1:]
@@ -763,17 +541,13 @@ if __name__ == "__main__":
                         room.say(par)
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
-                    elif cmd.lower() == "ignore":
-                        room.ignore(par)
-                    elif cmd.lower() == "unignore":
-                        room.unignore(par)
                     elif cmd.lower() == "list":
                         print("User list:")
                         print("---")
                         users = room.users
                         for user in users.keys():
                             user = users[user]
-                            print(ssS+"Nick:\t" + str(user.nick))
+                            print("Nick:\t" + str(user.nick))
                             print("User ID:\t" + str(user.id))
                             print("Color:\t" + str(user.color))
                             m = None
@@ -782,31 +556,16 @@ if __name__ == "__main__":
                             print("Mod:\t" + str(user.oper))
                             print("Admin:\t" + str(user.admin))
                             print("Account Name:\t" + str(user.accountName))
-                            print("---"+Sss)
+                            print("---")
                     elif cmd.lower() == "pm":
-                        if len(pars) > 0:
-                            pmMsg = " ".join(pars[1:])
-                            pmRecip = pars[0]
-                            if pmRecip == "@":
-                                room.pm(pmMsg, lastPM)
-                            elif pmRecip == "@u":
-                                room.pm(pmMsg, lastUserinfo)
-                            elif pmRecip == "!":
-                                setWindowTitle()
-                            else:
-                                room.pm(pmMsg, pmRecip)
+                        if len(pars) > 1:
+                            room.pm(" ".join(pars[1:]), pars[0])
                         else:
-                            print(ssS+"Argument required."+Sss)
+                            print("Please supply the recipient's nick as well as the message to send")
                     elif cmd.lower() == "nick":
                         room.setNick(par)
                     elif cmd.lower() == "color":
-                        if len(par) > 0:
-                            room.selectColor(par)
-                        else:
-                            room.cycleColor()
-                    elif cmd.lower() == "time":
-                        if len(par) > 0:
-                            room.setTimeformat(par)
+                        room.cycleColor()
                     elif cmd.lower() == "close":
                         room.close(par)
                     elif cmd.lower() == "ban":
