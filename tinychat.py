@@ -7,16 +7,23 @@ import time
 import socket
 import webbrowser
 from datetime import datetime
+#Check py 3 compat
+import getpass
 
+
+#Defining settings for one connection shoould be moved to connections' init
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
+TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
+                   "#1d82eb", "#919104", "#a990", "#b9807f", "#7bb224", "#1965b6", "#32a5d9"]
 
+#Defining global settings
 LOG_BASE_DIRECTORY = "log/"
 DEBUG_CONSOLE = False
 DEBUG_LOG = False
 CHAT_LOGGING = True # do not enable here and bot
 
-# cheking for python 2 or 3; ensuring use with both versions
+#Cheking Python version
 if sys.version_info[0] >= 3:
     get_input = input
     import _thread
@@ -26,11 +33,7 @@ else:
     import thread
     start_new_thread = thread.start_new_thread
 
-TINYCHAT_COLORS = ["#7db257", "#a78901", "#9d5bb5", "#5c1a7a", "#c53332", "#821615", "#a08f23", "#487d21", "#c356a3",
-                   "#1d82eb", "#919104", "#a990", "#b9807f", "#7bb224", "#1965b6", "#32a5d9"]
-
-
-def debugPrint(msg, room="unknown_room"):
+def debugPrint(msg, room):
     if DEBUG_CONSOLE:
         print("DEBUG: " + msg)
     if DEBUG_LOG:
@@ -212,6 +215,8 @@ class TinychatRoom():
                     elif cmd == "joinsdone":
                         self.sendCauth(self.userID)
                         if self.nick: self.setNick()
+                    elif cmd == "account":
+                        response = (pars[0])
                     elif cmd == "topic":
                         self.topic = pars[0].encode("ascii", "ignore")
                         self.onTopic(self.topic)
@@ -307,8 +312,8 @@ class TinychatRoom():
         self._chatlog("(@" + recipient +  ") [" + str(self.nick) + "] " + msg)
 
     def userinfo(self, recipient):
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
+        self._sendCommand("account", [u"" + self._getUser(recipient).id])
+
 
     def sendUserInfo(self, recipient, info):
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" + self._getUser(recipient).id +"-"+ recipient])
@@ -516,7 +521,11 @@ class TinychatRoom():
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
-    room = TinychatRoom(raw_input("Enter room name: "), raw_input("Enter username (optional): "), raw_input("Enter nickname (optional): "), raw_input("Enter password (optional): "))
+    room = TinychatRoom(raw_input("Enter room name: "),
+                        raw_input("Enter username (optional): "),
+                        raw_input("Enter nickname (optional): "),
+                        getpass.getpass("Enter password (optional): ")
+                        )
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
     while room.connected:
