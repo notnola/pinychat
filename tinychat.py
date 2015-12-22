@@ -56,24 +56,23 @@ for o, a in options:
         raise SystemExit
 
 # COLORNAME and COLORNUMBER list (the commented one)
-# Must be in alphabetical order for color numbers to work
 COLORS_DICT = { 
-"blue": "#1d82eb", #0
-"brass": "#919104", #1
-"sky blue": "#32a5d9", #2
-"dark blue": "#1965b6", #3
-"dark gold": "#a78901", #4
+"dark blue": "#1965b6", #0 Color numbers
+"sky blue": "#32a5d9", #1
+"lime gray": "#7db257", #2
+"gold": "#a78901", #3
+"purple": "#9d5bb5", #4
 "dark purple": "#5c1a7a", #5
-"gold gray": "#a08f23", #6
-"green": "#487d21", #7
-"lime": "#7bb224", #8
-"lime gray": "#7db257", #9
-"maroon": "#821615", #10
-"pink": "#c356a3", #11
-"pink gray": "#b9807f", #12
-"purple": "#9d5bb5", #13
-"red": "#c53332", #14
-"turquoise": "#00a990", #15
+"red": "#c53332", #6
+"maroon": "#821615", #7
+"gold gray": "#a08f23", #8
+"green": "#487d21", #9
+"pink": "#c356a3", #10
+"blue": "#1d82eb", #11
+"gold olive": "#919104", #12
+"turquoise": "#00a990", #13
+"pink gray": "#b9807f", #14
+"lime": "#7bb224", #15
 }
 TINYCHAT_COLORS = []
 firstRun = 1
@@ -87,14 +86,6 @@ for i in colorNames: # Dicts are unordered, this orders them and appends to TINY
     if x == 0:
         firstRun = 0
 
-def setWindowTitle(title=""): #todo: move this
-    title = str(title)
-    titlePrefix = "pinychat: " 
-    if os.name == "nt":
-        system("title " + titlePrefix + title)
-    else:
-        system("echo -e '\033]2;'" + titlePrefix + title + "'\007'")
-
 def debugPrint(msg, room="unknown_room"):
     if DEBUG_CONSOLE:
         print("DEBUG: " + msg)
@@ -105,6 +96,12 @@ def debugPrint(msg, room="unknown_room"):
         logfile = open(d + "debug.log", "a")
         logfile.write(msg + "\n")
         logfile.close()
+
+def initWindowTitle(title): # find a way to replace this with TinychatRoom.setWindowTitle()
+    if os.name == "nt":
+        system("title " + title)
+    else:
+        system("echo -e '\033]2;'" + title + "'\007'")
 
 class TinychatMessage():
     def __init__(self, msg, nick, user=None, recipient=None, color=None, pm=False):
@@ -195,7 +192,7 @@ class TinychatRoom():
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
-            raw_input("Press any key when captcha has been solved")
+            raw_input("Ready to connect to " + ooO+self.room+Ooo + ".\nPress any key when captcha has been solved")
             self.timecookie = self.__getEncMills()
             self.connect()
 
@@ -261,17 +258,22 @@ class TinychatRoom():
                                             if self.room == ac: user.admin = True
                                             self.onUserInfo(user)
                                         message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
-                                        setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
-                                        global lastUserinfo
-                                        lastUserinfo = user.nick
+                                        if str(user.nick) not in ignoreList:
+                                            self.setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
+                                            global lastUserinfo
+                                            lastUserinfo = user.nick
                                 else:
                                     self.onPM(user, message)
-                                    self._chatlog(ppP+" PM "+Ppp + " " + datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
-                                    global lastPM
-                                    lastPM = str(user.nick)
-                                    setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:25] + "...")
+                                    self._chatlog(ppP+" PM "+Ppp + " " + datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+":"+Sss+" " + str(message.msg))
+                                    if str(user.nick) not in ignoreList:
+                                        global lastPM
+                                        lastPM = str(user.nick)
+                                        self.setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + "...")
                             else:
                                 self.onMessage(user, message)
+                            if message.msg.startswith("/mbs youTube "):
+                                global lastYT
+                                lastYT = message.msg.split(" ")[2]
                             if str(user.nick) not in ignoreList:
 	                            self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
                     elif cmd == "registered":
@@ -389,18 +391,45 @@ Usage: /pm [OPTIONS]
     USER MESSAGE    PM a MESSAGE to USER
     
     Options for USER:
-    @   Latest PM
+    @   Latest PM sender
+    @@  Latest PM recipient
     @u  Latest userinfo request
     !   Clear (no MESSAGE needed)
 """+Sss)
             return
-        try:
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + self._getUser(recipient).id +"-"+ recipient])
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + self._getUser(recipient).id +"-"+ recipient])
-            self._chatlog("(" + ssS+"@"+recipient+Sss +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
-        except:
-            print(ssS+"--- Error sending PM (user not found?) ---"+Sss)
+        # try:
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
+        self._chatlog("(" + ppP+"@"+recipient+Ppp +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
+        global lastPMRecip
+        lastPMRecip = recipient
+        # except TypeError:
+            # print(ssS+"--- Error sending PM (user not found?) ---"+Sss)
+    windowTitlePrefix = "pinychat"
+    def setWindowTitle(self, title="", prefix=""):
+        if title == "@?@":
+            print(ssS+"""\
+Description: Sets window title or title prefix
+Usage: /title [OPTIONS]
+    CUSTOM     Title is CUSTOM
+    @          Title is nick
+    @@         Prefix is nick
+    @@ CUSTOM  Prefix is CUSTOM
+"""+Sss)
 
+            return
+        if prefix == "": # check if new prefix
+            prefix = self.windowTitlePrefix 
+        else:        
+            self.windowTitlePrefix  = prefix
+        title = str(title)
+        prefix = str(prefix) + ": "
+        
+        if os.name == "nt":
+            system("title " + prefix + title)
+        else:
+            system("echo -e '\033]2;'" + prefix + title + "'\007'")
+    
     def setTimeformat(self, newformat):
         global timeformat
         newformat = str(newformat)
@@ -483,15 +512,21 @@ Usage: /time [OPTIONS]
         self.banlist()
 
     def playYoutube(self, video):
-        try:
+        global lastYT
+        if video == "@":
+            if lastYT != "":
+                webbrowser.open("https://www.youtube.com/watch?v="+lastYT)
+        else:
             try:
-                yt = video.split(".be/")[1][:11]
+                try:
+                    yt = video.split(".be/")[1][:11]
+                except:
+                    yt = video.split("?v=")[1][:11]
+                self.say("/mbs youTube " + str(yt) + " 0")
+                lastYT = str(yt)
             except:
-                yt = video.split("?v=")[1][:11]
-            self.say("/mbs youTube " + str(yt) + " 0")
-        except:
-            self.adminsay("Something went wrong, maybe that link was invalid. Try again.")
 
+                self.adminsay("Something went wrong, maybe that link was invalid. Try again.")
     def stopYoutube(self):
         self.say("/mbc youTube")
 
@@ -549,7 +584,7 @@ Usage: /color [OPTIONS]
                 return
             newColor = colorNames[i]
             colorInfo = ssS+"--- Color: " + newColor + " (Old: " + currentColor + ") ---"+Sss
-            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number
+            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number # todo: color nums don't work, max color num is wrong
                 print(colorInfo)
                 self.color = TINYCHAT_COLORS[i]
             else:
@@ -704,7 +739,7 @@ Usage: /color [OPTIONS]
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
-    setWindowTitle()
+    initWindowTitle("pinychat")
     if roomnameArg == 0:
         roomnameArg = raw_input("Enter room name: ")
     if nicknameArg == 0:
@@ -717,6 +752,7 @@ if __name__ == "__main__":
        colorArg = raw_input("Enter color (optional): ")
 
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+    initWindowTitle(nicknameArg)
 
     colorama.init() # todo: move this whole section somewhere else
     # nicks
@@ -726,12 +762,14 @@ if __name__ == "__main__":
     ssS = Fore.YELLOW + Style.BRIGHT
     Sss = Style.RESET_ALL
     # PM
-    ppP = Fore.BLACK + Back.YELLOW
+    ppP = Fore.YELLOW
     Ppp = Style.RESET_ALL
 
     lastPM = ""
+    lastPMRecip = ""
     lastUserinfo = ""
     ignoreList = []
+    lastYT = ""
 
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
@@ -789,14 +827,18 @@ if __name__ == "__main__":
                             pmRecip = pars[0]
                             if pmRecip == "@":
                                 room.pm(pmMsg, lastPM)
+                            elif pmRecip == "@@":
+                                room.pm(pmMsg, lastPMRecip)
                             elif pmRecip == "@u":
                                 room.pm(pmMsg, lastUserinfo)
                             elif pmRecip == "!":
-                                setWindowTitle()
+                                room.setWindowTitle()
                             else:
                                 room.pm(pmMsg, pmRecip)
                         else:
                             print(ssS+"Argument required."+Sss)
+                    elif cmd.lower() == "what":
+                        print(ssS+"Room: " + room.room + "\tNick: " + room.nick+Sss)
                     elif cmd.lower() == "nick":
                         room.setNick(par)
                     elif cmd.lower() == "color":
@@ -807,6 +849,23 @@ if __name__ == "__main__":
                     elif cmd.lower() == "time":
                         if len(par) > 0:
                             room.setTimeformat(par)
+                    elif cmd.lower() == "title": # todo: move this logic to setWindowTitle
+                        if len(pars) > 0:
+                            if pars[0] == "@": # nick
+                                room.setWindowTitle(room.nick)
+                            elif pars[0].startswith("@@"): # prefix
+                                if pars[0] == "@@": # prefix = nick
+                                    room.setWindowTitle("", room.nick)
+                                else: # prefix = par
+                                    room.setWindowTitle("", pars[1:])
+                            elif pars[0] == "": # clear
+                                room.setWindowTitle()
+                            elif pars[0] == "?": # help
+                                room.setWindowTitle("@?@")
+                            else:
+                                room.setWindowTitle(pars[0])
+                    elif cmd.lower() == "/":
+                        room.setWindowTitle()
                     elif cmd.lower() == "close":
                         room.close(par)
                     elif cmd.lower() == "ban":
@@ -815,7 +874,7 @@ if __name__ == "__main__":
                         room.disconnect()
                     elif cmd.lower() == "reconnect":
                         room.reconnect()
-                    elif cmd.lower() == "playyoutube":
+                    elif cmd.lower() == "playyoutube" or "yt":
                         room.playYoutube(par)
                     elif cmd.lower() == "stopyoutube":
                         room.stopYoutube()
