@@ -25,10 +25,12 @@ Want to contribute? Great! Feel free to make pull requests at your discretion! F
 
 ### Todos
 
+ - Allow bots to use library commands
  - Add stream support
  - Write tests
  - Write better debug code
  - Add better comments / clean up code base
+
 
 ### Contributors
 This is where I will thank the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. (If you create a pull requests and it gets approved, please feel free to add your name to this list!
@@ -36,3 +38,35 @@ This is where I will thank the people who have helped make this project possible
 - [James Koss](http://www.jameskoss.com)
 - [Lord Gaben]
 - [Aida]
+
+### Commands
+
+`/command [options]`. Use `?` option for full list of options.  
+Some commands are currently only accessible directly from the lib. 
+
+* `say` *[message]*: say message
+* `adminsay` *[adminmessage]*: say admin message
+* `topic` *[topic]*: set room topic 
+* `list`: print user list
+* `banlist`: print banlist 
+* `ban` *[user]*: ban a user
+* `forgive` *[user]*: uban a user
+* `forgivename` *[user]*: unban a user and display banlist
+* `userinfo` *[user]*: get account name for user
+* `close` *[user]*: close a cam
+* `ignore` *[user]*: ignore a user
+* `unignore` *[user]*: unignore a user
+* `pm` *[user]* *[message]*: PM user with message
+* `nick` *[nick]*: set nick
+* `what`: print room and nick names
+* `color` *[color]*: set color
+* `time` *[timeformat]*: set time format
+* `title` *[title]*: set window title
+* `/`: reset window title
+* `playyoutube`/`yt` *[URL]*: play YouTube video from URL. If URL is `@`, the most recently-played video opens in your browser
+* `stopyoutube` 
+* `playsoundcloud` *[URL]*
+* `stopsoundcloud` 
+* `quit`
+* `reconnect` 
+
