@@ -2,6 +2,8 @@
 
 Pinychat is a Python module that allows you to easily interface with Tinychat.com. 
 
+Some features: commandline arguments, logging, mod actions, public/private messages, user ignoring, dummy cams.
+
 ### Version
 0.8.3
 
@@ -9,9 +11,7 @@ Pinychat is a Python module that allows you to easily interface with Tinychat.co
 
 Pinychat requires a few things to work properly:
 * 32bit install of Python 2.7
-
 * [requests] - https://github.com/kennethreitz/requests 
-
 * [colorama] - https://github.com/tartley/colorama
 
     ```sh
@@ -19,13 +19,22 @@ Pinychat requires a few things to work properly:
     # pip install colorama
     ```
 
+### Usage
+
+`tinychat.py NICK ROOM` or `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
+
+See also the *Commands* section below.
+
+`bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.
+	
+
 ### Development
 
 Want to contribute? Great! Feel free to make pull requests at your discretion! Feel free to contact me at notnola@openmailbox.com aswell! 
 
 ### Todos
 
- - Allow bots to use library commands
+ - Allow bots to use all module features/commands
  - Add stream support
  - Write tests
  - Write better debug code
@@ -42,7 +51,7 @@ This is where I will thank the people who have helped make this project possible
 ### Commands
 
 `/command [options]`. Use `?` option for full list of options.  
-Some commands are currently only accessible directly from the lib. 
+Some commands are currently only accessible directly from the module. 
 
 * `say` *[message]*: say message
 * `adminsay` *[adminmessage]*: say admin message
