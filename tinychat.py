@@ -30,6 +30,7 @@ else:
     import thread
     start_new_thread = thread.start_new_thread
 
+dateformat = "%Y-%m-%d %H:%M:%S"
 timeformat = "%H:%M:%S"
 
 # Argument handling
@@ -219,7 +220,7 @@ class TinychatRoom():
             try:
                 self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
                 self.connected = True
-                self._chatlog(" === Connected to " + str(self.room) + " === ")
+                self._chatlog(" === Connected to " + str(self.room) + " === " + datetime.now().strftime(dateformat))
                 self.onConnect()
                 self._listen()
             except Exception as e:
