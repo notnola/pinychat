@@ -536,7 +536,6 @@ Usage: /time [OPTIONS]
                 self.say("/mbs youTube " + str(yt) + " 0")
                 lastYT = str(yt)
             except:
-
                 self.adminsay("Something went wrong, maybe that link was invalid. Try again.")
     def stopYoutube(self):
         self.say("/mbc youTube")
@@ -885,7 +884,7 @@ if __name__ == "__main__":
                         room.disconnect()
                     elif cmd.lower() == "reconnect":
                         room.reconnect()
-                    elif cmd.lower() == "playyoutube" or "yt":
+                    elif cmd.lower() == "playyoutube" or cmd.lower() == "yt":
                         room.playYoutube(par)
                     elif cmd.lower() == "stopyoutube":
                         room.stopYoutube()
