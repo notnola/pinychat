@@ -368,7 +368,7 @@ class TinychatRoom():
 
     def adminsay(self, msg):
         self._sendCommand("owner_run",[u"notice" + msg.replace(" ", "%20")])
-        self._chatlog("*[" + str(self.nick) + "] " + msg.replace(" ", "%20"))
+        self._chatlog("*[" + str(self.nick) + "] " + msg)
 
     def _decodeMessage(self, msg):
         chars = msg.split(",")
@@ -900,7 +900,7 @@ if __name__ == "__main__":
                         room.forgiveName(par)
                     elif cmd.lower() == "topic":
                         room.setTopic(par)
-                    elif cmd.lower() == "adminsay":
+                    elif cmd.lower() == "adminsay" or cmd.lower() == "a":
                         room.adminsay(par)
             else:
                 room.say(msg)
