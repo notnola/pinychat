@@ -39,21 +39,31 @@ usernameArg = 0
 passwordArg = 0
 colorArg = 0
 
-options, args = getopt.getopt(sys.argv[1:],"r:n:u:p:c:",["info", "help"])
-for o, a in options:
-    if o == '-r':
-        roomnameArg = a
-    elif o == '-n':
-        nicknameArg = a
-    elif o == '-u':
-        usernameArg = a
-    elif o == '-p':
-        passwordArg = a
-    elif o == '-c':
-        colorArg = a
-    elif o == "--info" or o == "--help":
-        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR\n")
-        raise SystemExit
+allArgs = sys.argv[1:]
+if len(allArgs) == 2:
+    nicknameArg = allArgs[0]
+    roomnameArg = allArgs[1]
+else:
+    options, args = getopt.getopt(allArgs,"r:n:u:p:c:x:f:",["info", "help"])
+    for o, a in options:
+        if o == '-r':
+            roomnameArg = a
+        elif o == '-n':
+            nicknameArg = a
+        elif o == '-u':
+            usernameArg = a
+        elif o == '-p':
+            passwordArg = a
+        elif o == '-c':
+            colorArg = a
+        elif o == '-x':
+            repeatTarget = a
+        elif o == '-f':
+            fakeUsername = a
+        elif o == "--info" or o == "--help":
+            print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR")
+            print("       tinychat.py NICK ROOM\n")
+            raise SystemExit
 
 # COLORNAME and COLORNUMBER list (the commented one)
 COLORS_DICT = { 
@@ -192,7 +202,7 @@ class TinychatRoom():
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
-            raw_input("Ready to connect to " + ooO+self.room+Ooo + ".\nPress any key when captcha has been solved")
+            raw_input("Ready to connect as " + ooO+self.nick+Ooo + " to " + ooO+self.room+Ooo + ".\nPress any key when captcha has been solved.")
             self.timecookie = self.__getEncMills()
             self.connect()
 
