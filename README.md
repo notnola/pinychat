@@ -4,9 +4,6 @@ Pinychat is a Python module that allows you to easily interface with Tinychat.co
 
 Some features: commandline arguments, logging, mod actions, public/private messages, user ignoring, dummy cams.
 
-### Version
-0.8.3
-
 ### Requirements 
 
 Pinychat requires a few things to work properly:
@@ -23,7 +20,7 @@ Pinychat requires a few things to work properly:
 
 `tinychat.py NICK ROOM` or `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
-See also the [Commands](/README.md#Commands) section below.
+See also the [Commands](#Commands) section below.
 
 `bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.
 	
@@ -32,22 +29,12 @@ See also the [Commands](/README.md#Commands) section below.
 
 Want to contribute? Great! Feel free to make pull requests at your discretion! Feel free to contact me at notnola@openmailbox.com aswell! 
 
-### Todos
-
- - Allow bots to use all module features/commands
- - Write full command documentation
- - Add stream support
- - Write tests
- - Write better debug code
- - Add better comments / clean up code base
-
-
 ### Contributors
-This is where I will thank the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. (If you create a pull requests and it gets approved, please feel free to add your name to this list!
+Thanks to the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. If you create a pull requests and it gets approved, please feel free to add your name to this list!
 - [swiftSwathSee](https://github.com/swiftSwathSee)
 - [James Koss](http://www.jameskoss.com)
 - [Lord Gaben]
-- [Aida]
+- [Aida](https://github.com/Autotonic)
 
 ### Commands
 
@@ -67,7 +54,7 @@ Some commands are currently only accessible directly from the module.
 * `close [user]`: close a cam
 * `ignore [user]`: ignore a user
 * `unignore [user]`: unignore a user
-* `pm [user] *[message]`: PM user with message
+* `pm [user] [message]`: PM user with message
 * `nick [nick]`: set nick
 * `what`: print room and nick names
 * `color [color]`: set color
@@ -76,8 +63,16 @@ Some commands are currently only accessible directly from the module.
 * `/`: reset window title
 * `playyoutube` (or `yt`) ` [URL]`: play video from URL or view last-played video
 * `stopyoutube` 
-* `playsoundcloud [URL]
+* `playsoundcloud [URL]`
 * `stopsoundcloud` 
 * `quit`
 * `reconnect` 
 
+### To-do
+
+ - Allow bots to use all module features/commands
+ - Write full command documentation
+ - Add stream support
+ - Write tests
+ - Write better debug code
+ - Add better comments / clean up code base
