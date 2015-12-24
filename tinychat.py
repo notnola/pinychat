@@ -15,10 +15,12 @@ from os import system
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
 
+# SETTINGS #
 LOG_BASE_DIRECTORY = "log/"
 DEBUG_CONSOLE = False
 DEBUG_LOG = False
 CHAT_LOGGING = True # do not enable here and bot
+highContrast = False
 
 # cheking for python 2 or 3; ensuring use with both versions
 if sys.version_info[0] >= 3:
@@ -766,7 +768,10 @@ if __name__ == "__main__":
 
     colorama.init() # todo: move this whole section somewhere else
     # nicks
-    ooO = Style.BRIGHT
+    if highContrast == True:
+        ooO = Fore.CYAN + Style.BRIGHT
+    else:
+        ooO = Style.BRIGHT
     Ooo = Style.RESET_ALL
     # status/error
     ssS = Fore.YELLOW + Style.BRIGHT
