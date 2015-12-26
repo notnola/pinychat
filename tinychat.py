@@ -21,6 +21,7 @@ DEBUG_CONSOLE = False
 DEBUG_LOG = False
 CHAT_LOGGING = True # do not enable here and bot
 highContrast = False
+timeOnRight = False
 
 # cheking for python 2 or 3; ensuring use with both versions
 if sys.version_info[0] >= 3:
@@ -288,7 +289,10 @@ class TinychatRoom():
                                 global lastYT
                                 lastYT = message.msg.split(" ")[2]
                             if str(user.nick) not in ignoreList:
-	                            self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
+                                if timeOnRight == 1 or timeOnRight == True:
+                                    self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                else:
+                                    self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
                     elif cmd == "registered":
                         user = self._getUser(pars[0])
                         user.id = pars[1]
@@ -445,7 +449,9 @@ Usage: /title [OPTIONS]
     
     def setTimeformat(self, newformat):
         global timeformat
-        newformat = str(newformat)
+        global timeOnRight
+        print(ssS),
+        newformat = str(newformat).lower()
         if newformat == "?":
             print(ssS+"""\
 Description: Sets timestamp format
@@ -455,6 +461,8 @@ Usage: /time [OPTIONS]
     hm      00:00 (H:M)
     off     Disable timestamps
     FORMAT  Custom time format (strftime)
+    R       Timestamp on right
+    L       Timestamp on left
 """+Sss)
             return
         elif newformat == "hmss":
@@ -465,6 +473,12 @@ Usage: /time [OPTIONS]
             timeformat = "%H:%M"
         elif newformat == "off":
             timeformat = ""
+        elif newformat == "r":
+            timeOnRight = 1
+            print("--- Timestamp now on right ---"+Sss)
+        elif newformat == "l":
+            timeOnRight = 0
+            print("--- Timestamp now on left ---"+Sss)
         else:
             try:
                 test = datetime.now().strftime(newformat)

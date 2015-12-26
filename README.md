@@ -20,7 +20,7 @@ Pinychat requires a few things to work properly:
 
 `tinychat.py NICK ROOM` or `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
-See also the [Commands](#Commands) section below.
+See also the [Commands](#commands) section below.
 
 `bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.
 	
@@ -38,7 +38,7 @@ Thanks to the people who have helped make this project possible either by submit
 
 ### Commands
 
-`/command [options]`. Use `?` option for full list of options.  
+`/command [options]`. Use `?` option for full list of a command's options.  
 
 Some commands are currently only accessible directly from the module. 
 
