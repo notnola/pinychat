@@ -65,6 +65,7 @@ Some commands are currently only accessible directly from the module.
 * `stopyoutube` 
 * `playsoundcloud [URL]`
 * `stopsoundcloud` 
+* `sys [shell command]`: runs a shell command
 * `quit`
 * `reconnect` 
 

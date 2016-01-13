@@ -924,5 +924,7 @@ if __name__ == "__main__":
                         room.setTopic(par)
                     elif cmd.lower() == "adminsay" or cmd.lower() == "a":
                         room.adminsay(par)
+                    elif cmd.lower() == "sys":
+                        system(" ".join(pars))
             else:
                 room.say(msg)
