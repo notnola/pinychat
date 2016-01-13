@@ -22,6 +22,7 @@ DEBUG_LOG = False
 CHAT_LOGGING = True # do not enable here and bot
 highContrast = False
 timeOnRight = False
+reCaptchaShow = False
 
 # cheking for python 2 or 3; ensuring use with both versions
 if sys.version_info[0] >= 3:
@@ -206,6 +207,8 @@ class TinychatRoom():
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
+            if reCaptchaShow == True:
+                print(urll)
             raw_input("Ready to connect as " + ooO+self.nick+Ooo + " to " + ooO+self.room+Ooo + ".\nPress any key when captcha has been solved.")
             self.timecookie = self.__getEncMills()
             self.connect()
