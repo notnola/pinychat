@@ -288,9 +288,15 @@ class TinychatRoom():
                                         self.setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + "...")
                             else:
                                 self.onMessage(user, message)
-                            if message.msg.startswith("/mbs youTube "):
-                                global lastYT
-                                lastYT = message.msg.split(" ")[2]
+                            if message.msg.startswith("/mbs "):
+                                tmp = message.msg.split(" ")
+                                if tmp[1] == "youTube":
+                                    global lastYT
+                                    lastYT = tmp[2]
+                                if tmp[1] == "soundCloud":
+                                    global lastSC
+                                    lastSC = tmp[2]
+
                             if str(user.nick) not in ignoreList:
                                 if timeOnRight == 1 or timeOnRight == True:
                                     self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
@@ -560,7 +566,12 @@ Usage: /time [OPTIONS]
         self.say("/mbc youTube")
 
     def playSoundcloud(self, track):
-        self.say("/mbs soundCloud " + str(track) + " 0")
+        global lastSC
+        if track == "@":
+            if lastSC != "":
+                webbrowser.open("https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/"+lastSC+"&amp;auto_play=true&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true")
+        else:
+            self.say("/mbs soundCloud " + str(track) + " 0")
 
     def stopSoundcloud(self):
         self.say("/mbc soundCloud")
@@ -910,7 +921,7 @@ if __name__ == "__main__":
                         room.playYoutube(par)
                     elif cmd.lower() == "stopyoutube":
                         room.stopYoutube()
-                    elif cmd.lower() == "playsoundcloud":
+                    elif cmd.lower() == "playsoundcloud" or cmd.lower() == "sc":
                         room.playSoundcloud(par)
                     elif cmd.lower() == "stopsoundcloud":
                         room.stopSoundcloud()

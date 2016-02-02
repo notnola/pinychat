@@ -63,7 +63,7 @@ Some commands are currently only accessible directly from the module.
 * `/`: reset window title
 * `playyoutube` (or `yt`) ` [URL]`: play video from URL or view last-played video
 * `stopyoutube` 
-* `playsoundcloud [URL]`
+* `playsoundcloud`  (or `sc`) ` [URL]`: play track from URL or view last-played track
 * `stopsoundcloud` 
 * `sys [shell command]`: runs a shell command
 * `quit`
