@@ -23,6 +23,7 @@ CHAT_LOGGING = True # do not enable here and bot
 highContrast = False
 timeOnRight = False
 reCaptchaShow = False
+notificationsOn = True
 
 # cheking for python 2 or 3; ensuring use with both versions
 if sys.version_info[0] >= 3:
@@ -191,6 +192,7 @@ class TinychatRoom():
         self.userID = None
         self.forgiveQueue = []
         self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
+        self.notificationsOn = notificationsOn
         self.pmsDict = {}
 
     def _recaptcha(self):
@@ -347,7 +349,9 @@ class TinychatRoom():
                             del self.users[old]
                             self.users[user.nick] = user
                         self.onNickChange(user.nick, old, user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (old) + " is now known as " + str(user.nick) + ".")
+                        tmp = 1
+                        if self.notificationsOn == False: tmp = 0
+                        self._chatlog(datetime.now().strftime(timeformat) + " " + (old) + " is now known as " + str(user.nick) + ".", tmp)
                     elif cmd == "notice":
                         if str(pars[0]) == "avon":
                             print(datetime.now().strftime(timeformat) + " " + (pars[2]) + " is now broadcasting.")
@@ -361,7 +365,9 @@ class TinychatRoom():
                         user = self.users[pars[0].lower()]
                         del self.users[pars[0].lower()]
                         self.onQuit(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.")
+                        tmp = 1
+                        if self.notificationsOn == False: tmp = 0
+                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.", tmp)
                     elif cmd == "kick":
                         user = self.users[pars[1].lower()]
                         self.onBan(user)
@@ -527,6 +533,31 @@ Usage: /time [OPTIONS]
             except:
                 print("--- An error occured ---"+Sss)
         print(Sss),
+
+    def toggleNotificationsDisplay(self, arg=""):
+        if arg == "?":
+            print(ssS+"""\
+Description: Toggle notifications display
+Usage: /notes [OPTIONS] ; If no options, toggle on or off.
+    On|Off    Set on or off
+"""+Sss)
+            return
+        status = ssS+"Notifications: "
+        if arg == "":
+            if self.notificationsOn == True:
+                self.notificationsOn = False
+                print(status + "off")
+            else:
+                self.notificationsOn = True
+                print(status + "on")
+        else:
+            if arg == "on":
+                self.notificationsOn = True
+                print(status + "on")
+            if arg == "off":
+                print(status + "off")
+                self.notificationsOn = False
+        print Sss,
 
     def userinfo(self, recipient):
         try:
@@ -719,8 +750,8 @@ Usage: /color [OPTIONS]
     def onDisconnect(self):
         if self.echo: print("You have disconnected from " + self.room + ".")
 
-    def _chatlog(self, msg):
-        if self.echo2: print(msg)
+    def _chatlog(self, msg, echo=1):
+        if self.echo2 and echo == 1: print(msg)
         if self.chatlogging:
             d = LOG_BASE_DIRECTORY + "/" + self.room + "/"
             if not os.path.exists(d):
@@ -955,6 +986,8 @@ if __name__ == "__main__":
                                 room.setWindowTitle(pars[0])
                     elif cmd.lower() == "/":
                         room.setWindowTitle()
+                    elif cmd.lower() == "notifications" or cmd.lower() == "notes":
+                        room.toggleNotificationsDisplay(par)
                     elif cmd.lower() == "close":
                         room.close(par)
                     elif cmd.lower() == "ban":
