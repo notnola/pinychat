@@ -548,6 +548,14 @@ Usage: /time [OPTIONS]
         self.banlist()
 
     def playYoutube(self, video):
+        if video == "?":
+            print(ssS+"""\
+Description: Play YouTube video
+Usage: /sc [OPTIONS]
+    VIDEO     Play track
+    @         Open last-played video in browser
+"""+Sss)
+            return
         global lastYT
         if video == "@":
             if lastYT != "":
@@ -566,6 +574,14 @@ Usage: /time [OPTIONS]
         self.say("/mbc youTube")
 
     def playSoundcloud(self, track):
+        if track == "?":
+            print(ssS+"""\
+Description: Play SoundCloud track
+Usage: /sc [OPTIONS]
+    TRACK     Play track
+    @         Open last-played track in browser
+"""+Sss)
+            return
         global lastSC
         if track == "@":
             if lastSC != "":
