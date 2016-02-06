@@ -61,6 +61,7 @@ Some commands are currently only accessible directly from the module.
 * `time [timeformat]`: set time format
 * `title [title]`: set window title
 * `/`: reset window title
+* `notifications` (or `notes`) ` [setting]`: toggle notifications display or set on/off
 * `playyoutube` (or `yt`) ` [URL]`: play video from URL or view last-played video
 * `stopyoutube` 
 * `playsoundcloud`  (or `sc`) ` [URL]`: play track from URL or view last-played track

@@ -12,10 +12,20 @@ import colorama
 from colorama import Fore, Back, Style
 from os import system
 
+# Table of contents...
+#
+# SETTINGS
+# MESSAGE HANDLING
+#   If message is a userinfo request
+#   If message is an incoming PM
+#   If message is media command
+#   If message is not from ignored user (i.e. all other messages)
+# LIST OF COMMANDS
+
+# SETTINGS #
 AUTO_OP_OVERRIDE = None
 PROHASH_OVERRIDE = None
 
-# SETTINGS #
 LOG_BASE_DIRECTORY = "log/"
 DEBUG_CONSOLE = False
 DEBUG_LOG = False
@@ -914,6 +924,8 @@ if __name__ == "__main__":
                         cmd = parts[0]
                         pars = parts[1:]
                         par = " ".join(parts[1:])
+                    
+                    # LIST OF COMMANDS
                     if cmd.lower() == "publish":
                         room._sendCreateStream()
                         room._sendPublish()
