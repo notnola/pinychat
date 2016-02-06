@@ -191,6 +191,7 @@ class TinychatRoom():
         self.userID = None
         self.forgiveQueue = []
         self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
+        self.pmsDict = {}
 
     def _recaptcha(self):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
@@ -262,9 +263,12 @@ class TinychatRoom():
                             message = TinychatMessage(m, nick, user, recipient, color)
                             user.lastMsg = message
                             user.color = color
+                            
+                            # MESSAGE HANDLING #
                             if recipient.lower() == self.nick.lower():
                                 message.pm = True
                                 if message.msg.startswith("/msg ") and len(message.msg.split(" ")) >= 2: message.msg = " ".join(message.msg.split(" ")[2:])
+                                # If message is a userinfo request
                                 if message.msg.startswith("/userinfo ") and len(message.msg.split(" ")) >= 2:
                                     if user.nick != self.nick:
                                         ac = " ".join(message.msg.split(" ")[1:])
@@ -279,15 +283,24 @@ class TinychatRoom():
                                             self.setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
                                             global lastUserinfo
                                             lastUserinfo = user.nick
+                                # If message is an incoming PM
                                 else:
-                                    self.onPM(user, message)
-                                    self._chatlog(ppP+" PM "+Ppp + " " + datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+":"+Sss+" " + str(message.msg))
-                                    if str(user.nick) not in ignoreList:
+
+
+                                    self.onPM(user, message)                                    
+                                    self.addToPMsDict(str(user.nick), str(message.msg), datetime.now())
+                                    
+                                    if timeOnRight == 1 or timeOnRight == True: # print
+                                        self._chatlog(ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                    else:
+                                        self._chatlog(datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+":"+Sss+" " + str(message.msg))
+                                    if str(user.nick) not in ignoreList: # window title
                                         global lastPM
                                         lastPM = str(user.nick)
                                         self.setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + "...")
                             else:
                                 self.onMessage(user, message)
+                            # If message is media command
                             if message.msg.startswith("/mbs "):
                                 tmp = message.msg.split(" ")
                                 if tmp[1] == "youTube":
@@ -296,7 +309,7 @@ class TinychatRoom():
                                 if tmp[1] == "soundCloud":
                                     global lastSC
                                     lastSC = tmp[2]
-
+                            # If message is not from ignored user (i.e. all other messages)
                             if str(user.nick) not in ignoreList:
                                 if timeOnRight == 1 or timeOnRight == True:
                                     self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
@@ -312,6 +325,8 @@ class TinychatRoom():
                         user = self._getUser(pars[1])
                         user.id = pars[0]
                         self.onJoin(user)
+
+
                         self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".")
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
@@ -409,7 +424,7 @@ class TinychatRoom():
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
 
-    def pm(self, msg, recipient):
+    def pm(self, msg, recipient, time):
         if recipient == "?":
             print(ssS+"""\
 Description: Send PM.
@@ -423,14 +438,29 @@ Usage: /pm [OPTIONS]
     !   Clear (no MESSAGE needed)
 """+Sss)
             return
+        if recipient == "list":
+            print (ssS+"PMs list"+Sss)
+            for id, pm in sorted(room.pmsDict.items()):
+                dictNick = pm[0]
+                dictTime = datetime.strptime(pm[2], "%Y%m%d%H%M%S%f").strftime(timeformat)
+                dictMsg = pm[1]
+                print(ssS+"-"+Sss + "[" + dictTime + "] " + ooO+dictNick+": "+Ooo + dictMsg)
+            return
+    
         # try:
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
         self._chatlog("(" + ppP+"@"+recipient+Ppp +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
         global lastPMRecip
         lastPMRecip = recipient
+        
+        self.addToPMsDict(self.nick, msg, time)
         # except TypeError:
             # print(ssS+"--- Error sending PM (user not found?) ---"+Sss)
+    
+    def addToPMsDict(self, nick, msg, time):
+        time = time.strftime("%Y%m%d%H%M%S%f")
+        room.pmsDict[time] = [nick, msg, time] # [user, msg, time]
     windowTitlePrefix = "pinychat"
     def setWindowTitle(self, title="", prefix=""):
         if title == "@?@":
@@ -893,7 +923,7 @@ if __name__ == "__main__":
                             elif pmRecip == "!":
                                 room.setWindowTitle()
                             else:
-                                room.pm(pmMsg, pmRecip)
+                                room.pm(pmMsg, pmRecip, datetime.now())
                         else:
                             print(ssS+"Argument required."+Sss)
                     elif cmd.lower() == "what":
