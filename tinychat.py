@@ -33,6 +33,7 @@ CHAT_LOGGING = True # do not enable here and bot
 highContrast = False
 timeOnRight = False
 reCaptchaShow = False
+windowTitlePrefix = "pinychat"
 notificationsOn = True
 
 # cheking for python 2 or 3; ensuring use with both versions
@@ -123,11 +124,12 @@ def debugPrint(msg, room="unknown_room"):
         logfile.write(msg + "\n")
         logfile.close()
 
-def initWindowTitle(title): # find a way to replace this with TinychatRoom.setWindowTitle()
+def setWindowTitle(title, firstRun=0): # find a way to get this in one of the classes?
+    if firstRun != 0: title = windowTitlePrefix + ": " + title 
     if os.name == "nt":
         system("title " + title)
     else:
-        system("echo -e '\033]2;'" + title + "'\007'")
+        system("echo -e '\033]2;''" + title + "''\007'")
 
 class TinychatMessage():
     def __init__(self, msg, nick, user=None, recipient=None, color=None, pm=False):
@@ -292,7 +294,7 @@ class TinychatRoom():
                                             self.onUserInfo(user)
                                         message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
                                         if str(user.nick) not in ignoreList:
-                                            self.setWindowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
+                                            self.windowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
                                             global lastUserinfo
                                             lastUserinfo = user.nick
                                 # If message is an incoming PM
@@ -309,7 +311,9 @@ class TinychatRoom():
                                     if str(user.nick) not in ignoreList: # window title
                                         global lastPM
                                         lastPM = str(user.nick)
-                                        self.setWindowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + "...")
+                                        if len(str(message.msg)) > 160: dots = "..."
+                                        else: dots = ""
+                                        self.windowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + dots)
                             else:
                                 self.onMessage(user, message)
                             # If message is media command
@@ -337,9 +341,11 @@ class TinychatRoom():
                         user = self._getUser(pars[1])
                         user.id = pars[0]
                         self.onJoin(user)
+                        tmp = 1
+                        if self.notificationsOn == False: tmp = 0
 
 
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".")
+                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".", tmp)
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
                             user = self._getUser(pars[i*2 + 2])
@@ -477,8 +483,8 @@ Usage: /pm [OPTIONS]
     def addToPMsDict(self, nick, msg, time):
         time = time.strftime("%Y%m%d%H%M%S%f")
         room.pmsDict[time] = [nick, msg, time] # [user, msg, time]
-    windowTitlePrefix = "pinychat"
-    def setWindowTitle(self, title="", prefix=""):
+    def windowTitle(self, title="", prefix=""):
+        global windowTitlePrefix
         if title == "@?@":
             print(ssS+"""\
 Description: Sets window title or title prefix
@@ -488,19 +494,19 @@ Usage: /title [OPTIONS]
     @@         Prefix is nick
     @@ CUSTOM  Prefix is CUSTOM
 """+Sss)
-
             return
-        if prefix == "": # check if new prefix
-            prefix = self.windowTitlePrefix 
-        else:        
-            self.windowTitlePrefix  = prefix
-        title = str(title)
-        prefix = str(prefix) + ": "
+        if prefix == "": prefix = windowTitlePrefix 
+        else: windowTitlePrefix  = prefix
+        if title == "": title = self.nick
+
+        prefix = str(prefix)
+        # strip the start & end brackets
+        if prefix.startswith("["): prefix = prefix[1:] 
+        if prefix.endswith("]"): prefix = prefix[:-1]
         
-        if os.name == "nt":
-            system("title " + prefix + title)
-        else:
-            system("echo -e '\033]2;'" + prefix + title + "'\007'")
+        title = str(title)
+        prefix = prefix + ": "
+        setWindowTitle(prefix + title)
     
     def setTimeformat(self, newformat):
         global timeformat
@@ -866,7 +872,6 @@ Usage: /color [OPTIONS]
             self._sendCommand("cauth", [u"" + rr])
 
 if __name__ == "__main__":
-    initWindowTitle("pinychat")
     if roomnameArg == 0:
         roomnameArg = raw_input("Enter room name: ")
     if nicknameArg == 0:
@@ -879,7 +884,7 @@ if __name__ == "__main__":
        colorArg = raw_input("Enter color (optional): ")
 
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
-    initWindowTitle(nicknameArg)
+    setWindowTitle(nicknameArg, 1)
 
     colorama.init() # todo: move this whole section somewhere else
     # nicks
@@ -900,6 +905,7 @@ if __name__ == "__main__":
     lastUserinfo = ""
     ignoreList = []
     lastYT = ""
+    lastSC = ""
 
     start_new_thread(room._recaptcha, ())
     while not room.connected: time.sleep(1)
@@ -964,7 +970,7 @@ if __name__ == "__main__":
                             elif pmRecip == "@u":
                                 room.pm(pmMsg, lastUserinfo)
                             elif pmRecip == "!":
-                                room.setWindowTitle()
+                                room.windowTitle()
                             else:
                                 room.pm(pmMsg, pmRecip, datetime.now())
                         else:
@@ -981,23 +987,23 @@ if __name__ == "__main__":
                     elif cmd.lower() == "time":
                         if len(par) > 0:
                             room.setTimeformat(par)
-                    elif cmd.lower() == "title": # todo: move this logic to setWindowTitle
+                    elif cmd.lower() == "title": # todo: move this logic to windowTitle
                         if len(pars) > 0:
                             if pars[0] == "@": # nick
-                                room.setWindowTitle(room.nick)
+                                room.windowTitle(room.nick)
                             elif pars[0].startswith("@@"): # prefix
-                                if pars[0] == "@@": # prefix = nick
-                                    room.setWindowTitle("", room.nick)
+                                if pars[1] != "": # prefix = nick
+                                    room.windowTitle("", pars[1:])
                                 else: # prefix = par
-                                    room.setWindowTitle("", pars[1:])
+                                    room.windowTitle("", room.nick)
                             elif pars[0] == "": # clear
-                                room.setWindowTitle()
+                                room.windowTitle()
                             elif pars[0] == "?": # help
-                                room.setWindowTitle("@?@")
+                                room.windowTitle("@?@")
                             else:
-                                room.setWindowTitle(pars[0])
+                                room.windowTitle(pars[0])
                     elif cmd.lower() == "/":
-                        room.setWindowTitle()
+                        room.windowTitle()
                     elif cmd.lower() == "notifications" or cmd.lower() == "notes":
                         room.toggleNotificationsDisplay(par)
                     elif cmd.lower() == "close":
