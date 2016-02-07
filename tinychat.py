@@ -881,8 +881,8 @@ if __name__ == "__main__":
            usernameArg = raw_input("Enter username (optional): ")
         if passwordArg == 0:
            passwordArg = raw_input("Enter password (optional): ")
-        if colorArg == 0:
-           colorArg = raw_input("Enter color (optional): ")
+        # if colorArg == 0:
+           # colorArg = raw_input("Enter color (optional): ")
 
     if quickMode == 1:
         room = TinychatRoom(roomnameArg, "", nicknameArg, "")
