@@ -57,9 +57,11 @@ passwordArg = 0
 colorArg = 0
 
 allArgs = sys.argv[1:]
+quickMode = 0
 if len(allArgs) == 2:
     nicknameArg = allArgs[0]
     roomnameArg = allArgs[1]
+    quickMode = 1
 else:
     options, args = getopt.getopt(allArgs,"r:n:u:p:c:x:f:",["info", "help"])
     for o, a in options:
@@ -343,8 +345,6 @@ class TinychatRoom():
                         self.onJoin(user)
                         tmp = 1
                         if self.notificationsOn == False: tmp = 0
-
-
                         self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".", tmp)
                     elif cmd == "joins":
                         for i in range((len(pars) - 1) / 2):
@@ -876,14 +876,18 @@ if __name__ == "__main__":
         roomnameArg = raw_input("Enter room name: ")
     if nicknameArg == 0:
         nicknameArg = raw_input("Enter nickname (optional): ")
-    if usernameArg == 0:
-       usernameArg = raw_input("Enter username (optional): ")
-    if passwordArg == 0:
-       passwordArg = raw_input("Enter password (optional): ")
-    if colorArg == 0:
-       colorArg = raw_input("Enter color (optional): ")
+    if quickMode == 0:
+        if usernameArg == 0:
+           usernameArg = raw_input("Enter username (optional): ")
+        if passwordArg == 0:
+           passwordArg = raw_input("Enter password (optional): ")
+        if colorArg == 0:
+           colorArg = raw_input("Enter color (optional): ")
 
-    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+    if quickMode == 1:
+        room = TinychatRoom(roomnameArg, "", nicknameArg, "")
+    else:
+        room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
     colorama.init() # todo: move this whole section somewhere else
