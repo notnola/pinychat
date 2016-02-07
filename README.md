@@ -44,6 +44,7 @@ Thanks to the people who have helped make this project possible either by submit
 Some commands are currently only accessible directly from the module. 
 
 * `say [message]`: say message
+* `alert [command] [phrase]`: get alerts when a phrase is mentioned
 * `adminsay` (or `a`) ` [adminmessage]`: say admin message
 * `topic [topic]`: set room topic 
 * `list`: print user list
