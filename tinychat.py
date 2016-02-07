@@ -226,7 +226,7 @@ class TinychatRoom():
             webbrowser.open(urll)
             if reCaptchaShow == True:
                 print(urll)
-            raw_input("Ready to connect as " + ooO+self.nick+Ooo + " to " + ooO+self.room+Ooo + ".\nPress any key when captcha has been solved.")
+            raw_input("Ready to connect as " + ooO+self.nick+Ooo + " to " + ooO+self.room+Ooo + ".\nPress enter when captcha has been solved.")
             self.timecookie = self.__getEncMills()
             self.connect()
 
