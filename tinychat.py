@@ -208,6 +208,7 @@ class TinychatRoom():
         self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
         self.notificationsOn = notificationsOn
         self.pmsDict = {}
+        self.mentions = [self.nick]
 
     def _recaptcha(self):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
@@ -329,6 +330,13 @@ class TinychatRoom():
                                     lastSC = tmp[2]
                             # If message is not from ignored user (i.e. all other messages)
                             if str(user.nick) not in ignoreList:
+                                # Mentions
+                                mentioned = 0
+                                for phrase in self.mentions:
+                                    if phrase in str(message.msg):
+                                        mentioned = 1
+                                        # mentionedPhrase += [phrase]
+                                        print ssS+"["+phrase+"]",
                                 if timeOnRight == 1 or timeOnRight == True:
                                     self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
                                 else:
@@ -445,6 +453,40 @@ class TinychatRoom():
     def say(self, msg):
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
+
+    def setMentions(self, input):
+        if input[0] == "?":
+            print(ssS+"""\
+Description: Get alerts when certain phrases are mentioned.
+Usage: /alert [OPTIONS]
+    + PHRASE   Add PHRASE to mentions
+    - PHRASE   Remove PHRASE from mentions
+    l          List mentions
+"""+Sss)
+            return
+        print ssS,
+
+        cmd = input[0]
+        string = " ".join(input[1:])
+
+        if cmd == "list" or cmd == "l":
+            print "--- Mentions:",
+            for i in self.mentions:
+                print("'"+i+"'"),
+            print "--- "
+        elif cmd == "---":
+            self.mentions = []
+            print("--- Mentions cleared ---")
+        elif cmd == "-":
+            try:
+                self.mentions.remove(string)
+                print("--- Mention removed: '" + string + "' ---")
+            except: print "--- Error - mention doesn't exist? ---"
+        elif cmd == "+":
+            try: self.mentions.append(string)
+            except: print "--- Error ---"
+            print("--- Mention added: '" + string + "' ---")
+        print Sss,
 
     def pm(self, msg, recipient, time):
         if recipient == "?":
@@ -943,6 +985,8 @@ if __name__ == "__main__":
                         room.say(par)
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
+                    elif cmd.lower() == "alert":
+                        room.setMentions(pars)
                     elif cmd.lower() == "ignore":
                         room.ignore(par)
                     elif cmd.lower() == "unignore":
