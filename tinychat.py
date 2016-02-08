@@ -20,6 +20,7 @@ from os import system
 #   If message is an incoming PM
 #   If message is media command
 #   If message is not from ignored user (i.e. all other messages)
+#       Mentions
 # LIST OF COMMANDS
 
 # SETTINGS #
@@ -302,8 +303,6 @@ class TinychatRoom():
                                             lastUserinfo = user.nick
                                 # If message is an incoming PM
                                 else:
-
-
                                     self.onPM(user, message)                                    
                                     self.addToPMsDict(str(user.nick), str(message.msg), datetime.now())
                                     
@@ -488,7 +487,7 @@ Usage: /alert [OPTIONS]
             print("--- Mention added: '" + string + "' ---")
         print Sss,
 
-    def pm(self, msg, recipient, time):
+    def pm(self, msg, recipient, time=""):
         if recipient == "?":
             print(ssS+"""\
 Description: Send PM.
@@ -510,7 +509,7 @@ Usage: /pm [OPTIONS]
                 dictMsg = pm[1]
                 print(ssS+"-"+Sss + "[" + dictTime + "] " + ooO+dictNick+": "+Ooo + dictMsg)
             return
-    
+        if time == "": time = datetime.now()
         # try:
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
         self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
