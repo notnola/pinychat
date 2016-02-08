@@ -491,19 +491,28 @@ Usage: /alert [OPTIONS]
         if recipient == "?":
             print(ssS+"""\
 Description: Send PM.
-Usage: /pm [OPTIONS]
-    USER MESSAGE    PM a MESSAGE to USER
-    
+Usage: /pm [USER] [MESSAGE]
     Options for USER:
-    @   Latest PM sender
-    @@  Latest PM recipient
-    @u  Latest userinfo request
-    !   Clear (no MESSAGE needed)
+    @       Latest PM sender
+    @@      Latest PM recipient
+    @u      Latest userinfo request
+    !       Clear (no MESSAGE needed)
+    list    List all PMs
+    list X  List last X PMs (X=number)
 """+Sss)
             return
         if recipient == "list":
+            numToShow = 0
+            try: numToShow = int(msg)
+            except ValueError as e: pass
             print (ssS+"PMs list"+Sss)
-            for id, pm in sorted(room.pmsDict.items()):
+            
+            sortedpmsDict = sorted(room.pmsDict.items()) # inefficient: maybe switch to multidimensional arrays instead of a dict, since arrays are already ordered
+            indexEnd = len(sortedpmsDict)
+            if numToShow > 0: indexStart = indexEnd-numToShow
+            else: indexStart = 0
+            
+            for id, pm in sortedpmsDict[indexStart:indexEnd]:
                 dictNick = pm[0]
                 dictTime = datetime.strptime(pm[2], "%Y%m%d%H%M%S%f").strftime(timeformat)
                 dictMsg = pm[1]
@@ -642,6 +651,7 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
         if not nick: nick = self.nick
         self.nick = nick
         self._sendCommand("nick", [u"" + nick])
+        self.windowTitle(nick)
 
     def setTopic(self, t):
         self._sendCommand("topic", [u"" + str(t)])
