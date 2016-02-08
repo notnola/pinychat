@@ -775,6 +775,38 @@ Usage: /color [OPTIONS]
                 print(invalidColor)
         print(Sss),
 
+    def listUsers(self, input):
+        print ssS
+        if input == "?":
+            print(ssS+"""\
+Description: Lists users.
+Usage: /list [OPTIONS]
+    full   List full details
+"""+Sss)
+            return
+        users = room.users
+        userlist = []
+        print("--- User list: "),
+        for user in users.keys():
+            user = users[user]
+            nick = str(user.nick)
+            account = str(user.accountName)
+            if account == "None": userlist += [nick]
+            else: userlist += [(nick + "(" + account + ")")]
+        userlist = sorted(userlist)
+        print(", ".join(userlist) + " ---")
+
+        if input == "full":
+            print("User list:\n---")
+            for user in users.keys():
+                user = users[user]
+                m = None
+                if user.lastMsg != None: m = user.lastMsg.msg
+                print(ssS+"Nick: " + str(user.nick) + " | ID: " + str(user.id) + " | Color: " + str(user.color)
+                + " | Last Message: " + str(m) + " | Mod: " + str(user.oper) + " | Admin: " + str(user.admin)
+                + " | Account Name: " + str(user.accountName))
+        print Sss,
+
     def onConnect(self):
         if self.echo: print("You have connected to Tinychat.")
 
@@ -1001,21 +1033,7 @@ if __name__ == "__main__":
                     elif cmd.lower() == "unignore":
                         room.unignore(par)
                     elif cmd.lower() == "list":
-                        print("User list:")
-                        print("---")
-                        users = room.users
-                        for user in users.keys():
-                            user = users[user]
-                            print(ssS+"Nick:\t" + str(user.nick))
-                            print("User ID:\t" + str(user.id))
-                            print("Color:\t" + str(user.color))
-                            m = None
-                            if user.lastMsg != None: m = user.lastMsg.msg
-                            print("Last Message:\t" + str(m))
-                            print("Mod:\t" + str(user.oper))
-                            print("Admin:\t" + str(user.admin))
-                            print("Account Name:\t" + str(user.accountName))
-                            print("---"+Sss)
+                        room.listUsers(par)
                     elif cmd.lower() == "pm":
                         if len(pars) > 0:
                             pmMsg = " ".join(pars[1:])
