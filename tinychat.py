@@ -518,17 +518,17 @@ Usage: /pm [USER] [MESSAGE]
                 dictMsg = pm[1]
                 print(ssS+"-"+Sss + "[" + dictTime + "] " + ooO+dictNick+": "+Ooo + dictMsg)
             return
-        if time == "": time = datetime.now()
-        # try:
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
-        self._chatlog("(" + ppP+"@"+recipient+Ppp +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
-        global lastPMRecip
-        lastPMRecip = recipient
-        
-        self.addToPMsDict(self.nick, msg, time)
-        # except TypeError:
-            # print(ssS+"--- Error sending PM (user not found?) ---"+Sss)
+        if recipient in room.users:
+            if time == "": time = datetime.now()
+            # try:
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
+            self._chatlog("(" + ppP+"@"+recipient+Ppp +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
+            global lastPMRecip
+            lastPMRecip = recipient
+            
+            self.addToPMsDict(self.nick, msg, time)
+        else: print(ssS+"--- Could not send PM: user does not exist ---"+Sss)
     
     def addToPMsDict(self, nick, msg, time):
         time = time.strftime("%Y%m%d%H%M%S%f")
