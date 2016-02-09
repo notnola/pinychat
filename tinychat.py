@@ -309,7 +309,7 @@ class TinychatRoom():
                                     if timeOnRight == 1 or timeOnRight == True: # print
                                         self._chatlog(ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
                                     else:
-                                        self._chatlog(datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+":"+Sss+" " + str(message.msg))
+                                        self._chatlog(datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg))
                                     if str(user.nick) not in ignoreList: # window title
                                         global lastPM
                                         lastPM = str(user.nick)
