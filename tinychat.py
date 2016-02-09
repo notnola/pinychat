@@ -283,6 +283,7 @@ class TinychatRoom():
                             user.color = color
                             
                             # MESSAGE HANDLING #
+                            messageIsPM = 0
                             if recipient.lower() == self.nick.lower():
                                 message.pm = True
                                 if message.msg.startswith("/msg ") and len(message.msg.split(" ")) >= 2: message.msg = " ".join(message.msg.split(" ")[2:])
@@ -303,6 +304,7 @@ class TinychatRoom():
                                             lastUserinfo = user.nick
                                 # If message is an incoming PM
                                 else:
+                                    messageIsPM = 1
                                     self.onPM(user, message)                                    
                                     self.addToPMsDict(str(user.nick), str(message.msg), datetime.now())
                                     
@@ -328,7 +330,7 @@ class TinychatRoom():
                                     global lastSC
                                     lastSC = tmp[2]
                             # If message is not from ignored user (i.e. all other messages)
-                            if str(user.nick) not in ignoreList:
+                            if str(user.nick) not in ignoreList and messageIsPM == 0:
                                 # Mentions
                                 mentioned = 0
                                 for phrase in self.mentions:
