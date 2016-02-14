@@ -210,6 +210,7 @@ class TinychatRoom():
         self.notificationsOn = notificationsOn
         self.pmsDict = {}
         self.mentions = [self.nick]
+        self.prependMessage = ""
 
     def _recaptcha(self):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
@@ -452,9 +453,35 @@ class TinychatRoom():
 
 
     def say(self, msg):
+        msg = self.prependMessage + msg
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
 
+    def setPrepend(self, input):
+        if input[0] == "?":
+            print(ssS+"""\
+Description: Manage message prepend.
+Usage: /pre [OPTIONS]
+    STRING   Set prepend to STRING
+    !        Clear prepend
+    @        Print prepend
+"""+Sss)
+            return
+        if input[0] == "!":
+            self.prependMessage = ""
+            print(ssS+"--- Prepend cleared ---"+Sss)
+        elif input[0] == "@":
+            if self.prependMessage == "":
+                print(ssS+"--- Prepend is not set ---"+Sss)
+            else:
+                print(ssS+"--- Prepend is: '" + self.prependMessage + "' ---"+Sss)
+        elif len(input) > 0:
+            string = " ".join(input[0:])
+            if string.startswith("\\"): # escape characters
+                string = string[1:]
+            self.prependMessage = string
+            print(ssS+"--- Prepend is now: '" + self.prependMessage + "' ---"+Sss)
+        
     def setMentions(self, input):
         if input[0] == "?":
             print(ssS+"""\
@@ -1026,6 +1053,8 @@ if __name__ == "__main__":
                         room._sendPublish()
                     elif cmd.lower() == "say":
                         room.say(par)
+                    elif cmd.lower() == "pre":
+                        room.setPrepend(pars)
                     elif cmd.lower() == "userinfo":
                         room.userinfo(par)
                     elif cmd.lower() == "alert":
