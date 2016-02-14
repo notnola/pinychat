@@ -880,6 +880,7 @@ Usage: /list [OPTIONS]
 
     def _chatlog(self, msg, echo=1):
         if self.echo2 and echo == 1: print(msg)
+        msg = msg.replace("[36m", "").replace("[0m", "").replace("[33m", "").replace("[1m", "")
         if self.chatlogging:
             d = LOG_BASE_DIRECTORY + "/" + self.room + "/"
             if not os.path.exists(d):
