@@ -39,11 +39,12 @@ Thanks to the people who have helped make this project possible either by submit
 
 ### Commands
 
-`/command [options]`. Use `?` option for full list of a command's options.  
+`/command [options]`. Use `?` option for full list of a command's options (help).  
 
 Some commands are currently only accessible directly from the module. 
 
 * `say [message]`: say message
+* `delay [options]`: delay your messages
 * `alert [command] [phrase]`: get alerts when a phrase is mentioned
 * `adminsay` (or `a`) ` [adminmessage]`: say admin message
 * `topic [topic]`: set room topic 

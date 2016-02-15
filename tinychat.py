@@ -35,6 +35,7 @@ highContrast = False
 timeOnRight = False
 reCaptchaShow = False
 windowTitlePrefix = "pinychat"
+delayMessage = False
 notificationsOn = True
 
 # cheking for python 2 or 3; ensuring use with both versions
@@ -211,6 +212,9 @@ class TinychatRoom():
         self.pmsDict = {}
         self.mentions = [self.nick]
         self.prependMessage = ""
+        self.delayMessageAmount = 1
+        if delayMessage: self.delayMessageTrue = 1
+        else: self.delayMessageTrue = 0
 
     def _recaptcha(self):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
@@ -453,6 +457,7 @@ class TinychatRoom():
 
 
     def say(self, msg):
+        if self.delayMessageTrue == 1: time.sleep(self.delayMessageAmount)
         msg = self.prependMessage + msg
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
@@ -481,7 +486,33 @@ Usage: /pre [OPTIONS]
                 string = string[1:]
             self.prependMessage = string
             print(ssS+"--- Prepend is now: '" + self.prependMessage + "' ---"+Sss)
-        
+
+    def setMessageDelay(self, input):
+        if input == "?":
+            print(ssS+"""\
+Description: Manage message delay.
+Usage: /delay [OPTIONS]
+    NUMBER   Set delay to NUMBER (seconds)
+    on       Turn it on
+    off      Turn it off
+"""+Sss)
+            return
+        print ssS,
+
+        if input == "on":
+            self.delayMessageTrue = 1
+            print(ssS+"--- Message delay on ---"+Sss)
+        elif input == "off":
+            self.delayMessageTrue = 0
+            print(ssS+"--- Message delay off ---"+Sss)
+        else:
+            try: input = float(input)
+            except ValueError as e:
+                print(ssS+"--- Value must be a number ---"+Sss)
+                return
+            self.delayMessageAmount = input
+            print(ssS+"--- Message delay: " + str(input) + " seconds ---"+Sss)
+            
     def setMentions(self, input):
         if input[0] == "?":
             print(ssS+"""\
@@ -1141,5 +1172,7 @@ if __name__ == "__main__":
                         room.adminsay(par)
                     elif cmd.lower() == "sys":
                         system(" ".join(pars))
+                    elif cmd.lower() == "delay":
+                        room.setMessageDelay(par)
             else:
                 room.say(msg)
