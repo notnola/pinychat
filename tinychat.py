@@ -402,6 +402,8 @@ class TinychatRoom():
                         user = self.users[pars[1].lower()]
                         self.onBan(user)
                         self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
+                    elif cmd == "banned":
+                        self._chatlog(datetime.now().strftime(timeformat) + " You have been banned from the room!.")
                     elif cmd == "oper":
                         user = self._getUser(pars[1])
                         user.oper = True
