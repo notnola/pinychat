@@ -51,7 +51,7 @@ Some commands are currently only accessible directly from the module.
 * `list`: print user list
 * `banlist`: print banlist 
 * `ban [user]`: ban a user
-* `forgive [user]`: uban a user
+* `forgive [user]`: unban a user
 * `forgivename [user]`: unban a user and display banlist
 * `userinfo [user]`: get account name for user
 * `close [user]`: close a cam
