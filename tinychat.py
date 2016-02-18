@@ -188,7 +188,7 @@ class TinychatRoom():
         self.port = int(tcurlsplits3[1])
         self.app = tcurlsplits1[3]                                      # Defining Tinychat FMS App
         self.pageurl = "http://tinychat.com/" + room                    # Definging Tinychat's Room HTTP URL
-        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0632.swf?version=1.0.0.0632/[[DYNAMIC]]/8" #static
+        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0657.swf?version=1.0.0.0657/[[DYNAMIC]]/8" #static
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
