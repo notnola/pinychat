@@ -188,7 +188,7 @@ class TinychatRoom():
         self.port = int(tcurlsplits3[1])
         self.app = tcurlsplits1[3]                                      # Defining Tinychat FMS App
         self.pageurl = "http://tinychat.com/" + room                    # Definging Tinychat's Room HTTP URL
-        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0632.swf?version=1.0.0.0632/[[DYNAMIC]]/8" #static
+        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0657.swf?version=1.0.0.0657/[[DYNAMIC]]/8" #static
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
@@ -401,7 +401,12 @@ class TinychatRoom():
                     elif cmd == "kick":
                         user = self.users[pars[1].lower()]
                         self.onBan(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
+                        if user.nick == self.nick:
+                            continue
+                        else:
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
+                    elif cmd == "banned":
+                        self._chatlog(datetime.now().strftime(timeformat) + " You have been banned from the room!")
                     elif cmd == "oper":
                         user = self._getUser(pars[1])
                         user.oper = True
