@@ -17,7 +17,7 @@ Some features: commandline arguments, logging, mod actions, public/private messa
 
 ### Usage
 
-Shorthand: `tinychat.py NICK ROOM`
+Shorthand (quick mode): `tinychat.py NICK ROOM`
 Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
 All arguments optional.

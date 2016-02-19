@@ -134,31 +134,31 @@ if DefaultNick != None and nicknameArg == 0:
 # Argument handling
 allArgs = sys.argv[1:]
 quickMode = 0
-if len(allArgs) == 2:
+if allArgs[0][0] != "-" and allArgs[1][0] != "-":
     nicknameArg = allArgs[0]
     roomnameArg = allArgs[1]
     quickMode = 1
-else:
-    options, args = getopt.getopt(allArgs,"r:n:u:p:c:x:f:",["info", "help"])
-    for o, a in options:
-        if o == '-r':
-            roomnameArg = a
-        elif o == '-n':
-            nicknameArg = a
-        elif o == '-u':
-            usernameArg = a
-        elif o == '-p':
-            passwordArg = a
-        elif o == '-c':
-            colorArg = a
-        elif o == '-x':
-            repeatTarget = a
-        elif o == '-f':
-            fakeUsername = a
-        elif o == "--info" or o == "--help":
-            print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR")
-            print("       tinychat.py NICK ROOM\n")
-            raise SystemExit
+    allArgs.remove(nicknameArg)
+    allArgs.remove(roomnameArg)
+    fakedArgs = ["-n", nicknameArg, "-r", roomnameArg] # since getopt doesn't play nicely with dashless options...
+    allArgs = fakedArgs + allArgs
+
+options, args = getopt.getopt(allArgs,"r:n:u:p:c:",["info", "help"])
+for o, a in options:
+    if o == '-r':
+        roomnameArg = a
+    elif o == '-n':
+        nicknameArg = a
+    elif o == '-u':
+        usernameArg = a
+    elif o == '-p':
+        passwordArg = a
+    elif o == '-c':
+        colorArg = a
+    elif o == "--info" or o == "--help":
+        print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR")
+        print("       tinychat.py NICK ROOM\n")
+        raise SystemExit
 
 # COLORNAME and COLORNUMBER list (the commented one)
 COLORS_DICT = { 
