@@ -17,25 +17,14 @@ Some features: commandline arguments, logging, mod actions, public/private messa
 
 ### Usage
 
-All arguments optional.
+Shorthand: `tinychat.py NICK ROOM`
+Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
-`tinychat.py NICK ROOM` or the longform `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
+All arguments optional.
 
 See also the [Commands](#commands) section below.
 
 `bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.
-	
-
-### Development
-
-Want to contribute? Feel free to make pull requests at your discretion, or contact me at notnola@openmailbox.com!
-
-### Contributors
-Thanks to the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. If you create a pull requests and it gets approved, please feel free to add your name to this list!
-- [swiftSwathSee](https://github.com/swiftSwathSee)
-- [James Koss](http://www.jameskoss.com)
-- [Lord Gaben]
-- [Aida](https://github.com/Autotonic)
 
 ### Commands
 
@@ -72,6 +61,23 @@ Some commands are currently only accessible directly from the module.
 * `sys [shell command]`: runs a shell command
 * `quit`
 * `reconnect` 
+
+### Configuration
+
+You can optionally configure the module via the `pinychat.ini` file. See [settings.md](settings.md) for the details.
+
+### Development
+
+Want to contribute? Feel free to make pull requests and issues at your discretion, or contact me at notnola@openmailbox.com!
+
+### Contributors
+Thanks to the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. If you create a pull requests and it gets approved, please feel free to add your name to this list!
+- [swiftSwathSee](https://github.com/swiftSwathSee)
+- [James Koss](http://www.jameskoss.com)
+- [Lord Gaben]
+- [Aida](https://github.com/Autotonic)
+- [TechWhizZ199](https://github.com/TechWhizZ199)
+
 
 ### To-do
 

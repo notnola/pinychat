@@ -12,9 +12,15 @@ import colorama
 from colorama import Fore, Back, Style
 from os import system
 
-# Table of contents...
+# Table of contents...(incomplete)
 #
+# INIT
+#   Python version check
+#   Base room variables
 # SETTINGS
+#   Default settings
+#   Config file
+#   Argument handling
 # MESSAGE HANDLING
 #   If message is a userinfo request
 #   If message is an incoming PM
@@ -23,41 +29,109 @@ from os import system
 #       Mentions
 # LIST OF COMMANDS
 
-# SETTINGS #
-AUTO_OP_OVERRIDE = None
-PROHASH_OVERRIDE = None
-
-LOG_BASE_DIRECTORY = "log/"
-DEBUG_CONSOLE = False
-DEBUG_LOG = False
-CHAT_LOGGING = True # do not enable here and bot
-highContrast = False
-timeOnRight = False
-reCaptchaShow = False
-windowTitlePrefix = "pinychat"
-delayMessage = False
-notificationsOn = True
-
-# cheking for python 2 or 3; ensuring use with both versions
+# INIT
+# Python version check: cheking for 2 or 3
 if sys.version_info[0] >= 3:
     get_input = input
     import _thread
     start_new_thread = _thread.start_new_thread
+    from configparser import ConfigParser, NoOptionError, NoSectionError
 else:
     get_input = raw_input
     import thread
     start_new_thread = thread.start_new_thread
+    from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 
-dateformat = "%Y-%m-%d %H:%M:%S"
-timeformat = "%H:%M:%S"
-
-# Argument handling
+# Base room variables
 roomnameArg = 0
 nicknameArg = 0
 usernameArg = 0
 passwordArg = 0
 colorArg = 0
 
+# SETTINGS
+# Default settings
+defaultConfig = { 
+    "AUTO_OP_OVERRIDE": None,
+    "PROHASH_OVERRIDE": None,
+    "DefaultRoom": None,
+    "DefaultNick": None,
+    "useDefaultAccount": False,
+    "DefaultAccountName": None,
+    "DefaultAccountPass": None,
+    "LOG_BASE_DIRECTORY": "log/",
+    "DEBUG_CONSOLE": False,
+    "DEBUG_LOG": False,
+    "CHAT_LOGGING": True,
+    "highContrast": False,
+    "timeOnRight": False,
+    "reCaptchaShow": False,
+    "windowTitlePrefix": "pinychat",
+    "dateformat": "%Y-%m-%d %H:%M:%S",
+    "timeformat": "%H:%M:%S",
+    "delayMessage": False,
+    "notificationsOn": True
+} # Regex for converting to settings.md:
+# 1. Find: /^\s*?\"(.*)\"\: \"?(.*)\"?[,|$|\r\n]/     Replace: /$1 | $2 | /
+# 2. Find: /\"?\, \| $/     Replace: / | /
+# 3. Find: /True/     Replace: /1/
+# 4. Find: /False/     Replace: /0/
+
+# Config file
+configfileName = "pinychat.ini"
+config = ConfigParser(allow_no_value=True)
+configCheck = config.read(configfileName)
+if configCheck == []: # make it if it doesn't exist
+    configfile = open(configfileName, 'a') 
+    configfile.write("[Main]\n")
+    print("Created settings file " + configfileName)
+    configfile.close()
+else: # if it exists, check for the section header. todo: if add the header if needed
+    configfile = open(configfileName, 'r') 
+    firstline = configfile.readline()
+    if firstline != "[Main]\n":
+        if firstline != "[Main]\r\n":
+            if firstline != "[Main]":
+                print "Settings file must start with '[Main]' to be used"
+    configfile.close()
+
+namespace = __import__(__name__)
+for key in defaultConfig.keys():
+    # turn default settings into variables
+    settingName = key
+    settingValue = defaultConfig[settingName]
+    setattr(namespace, settingName, settingValue)
+
+    # do the same for the config file
+    makeVariable = 0
+    settingValueIsString = 0
+    try:
+        tmpValue = config.getint("Main", settingName)
+        makeVariable = 1
+    except NoOptionError: pass
+    except NoSectionError: pass
+    except ValueError: # if value is not a bool, it's probably a string, so use get()
+        tmpValue = config.get("Main", settingName)
+        makeVariable = 1
+        settingValueIsString = 1
+    if makeVariable == 1:
+        if settingValueIsString == 0:
+            if tmpValue == 1: settingValue = True
+            elif tmpValue == 0: settingValue = False
+            else: print("Config error: " + settingName + "must be either 1 (true) or 0 (false)")
+        else: settingValue = tmpValue
+        setattr(namespace, settingName, settingValue)
+        # print "set " + str(settingName) + " " + str(settingValue)
+
+if useDefaultAccount == True and usernameArg == 0:
+    usernameArg = DefaultAccountName
+    passwordArg = DefaultAccountPass
+if DefaultRoom != None and roomnameArg == 0:
+    roomnameArg = DefaultRoom
+if DefaultNick != None and nicknameArg == 0:
+    nicknameArg = DefaultNick
+
+# Argument handling
 allArgs = sys.argv[1:]
 quickMode = 0
 if len(allArgs) == 2:
@@ -1033,10 +1107,7 @@ if __name__ == "__main__":
         # if colorArg == 0:
            # colorArg = raw_input("Enter color (optional): ")
 
-    if quickMode == 1:
-        room = TinychatRoom(roomnameArg, "", nicknameArg, "")
-    else:
-        room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
     colorama.init() # todo: move this whole section somewhere else
