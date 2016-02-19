@@ -305,9 +305,10 @@ class TinychatRoom():
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
-            if reCaptchaShow == True:
-                print(urll)
-            raw_input("Ready to connect as " + ooO+self.nick+Ooo + " to " + ooO+self.room+Ooo + ".\nPress enter when captcha has been solved.")
+            if (self.username == None or self.username == 0 or self.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
+            else: username = " (" + self.username + ")"
+            raw_input("Ready to connect as " + ooO+self.nick+Ooo + username + " to " + ooO+self.room+Ooo + ".\nPress enter when the captcha has been solved.")
+            if reCaptchaShow == True: print(urll)
             self.timecookie = self.__getEncMills()
             self.connect()
 
@@ -322,9 +323,11 @@ class TinychatRoom():
             debugPrint("Room: " + str(self.room), str(self.room))
             debugPrint("AutoOp: " + str(self.autoop), str(self.room))
             try:
+                if (self.username == None or self.username == 0 or self.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
+                else: username = " (" + self.username + ")"
                 self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
                 self.connected = True
-                self._chatlog(" === Connected to " + str(self.room) + " === " + datetime.now().strftime(dateformat))
+                self._chatlog(" === Connected to " + str(self.room) + " as " + self.nick + username + " === " + datetime.now().strftime(dateformat))
                 self.onConnect()
                 self._listen()
             except Exception as e:
