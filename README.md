@@ -1,8 +1,8 @@
 # Pinychat
 
-Pinychat is a Python module that allows you to easily interface with Tinychat.com. 
+Pinychat is a Python module and client that allows you to easily interface with Tinychat.com. 
 
-Some features: commandline arguments, logging, mod actions, public/private messages, user ignoring, dummy cams, and much more.
+Features: commandline arguments, room logging, mod actions, public/private messages, user ignoring, dummy cams, and much more.
 
 ### Requirements 
 
@@ -17,49 +17,66 @@ Some features: commandline arguments, logging, mod actions, public/private messa
 
 ### Usage
 
-Shorthand (quick mode): `tinychat.py NICK ROOM`
-Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
-
+#### Startup
 All arguments optional.
 
-Tinychat.com room URLs are also accepted for `ROOM`.
+Shorthand (quick mode): `tinychat.py NICK ROOM`  
+Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
-See also the [Commands](#commands) section below.
+ `ROOM` may also be a Tinychat.com room URL.
 
-`bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.
+#### Using it as a standalone client
+
+See the [Commands](#commands) section.
+
+#### Using it as a module (i.e. as part of your own client)
+
+This is currently very limited, but you can see the `bot.py` example. Only a small subset of the module's features are available. Full module support will be added eventually.
 
 ### Commands
 
-`/command [options]`. Use `?` option for full list of a command's options (help).  
+Usage: `/command [options]`. Use the `?` option to see a full list of a commands features.
 
-Some commands are currently only accessible directly from the module. 
+#### You
 
-* `say [message]`: say message
+* `pm [user] [message]`: send a PM to a user
+* `nick [nick]`: set your nick
 * `delay [options]`: delay your messages
 * `alert [command] [phrase]`: get alerts when a phrase is mentioned
-* `adminsay` (or `a`) ` [adminmessage]`: say admin message
+* `say [message]`: say message (this is the default command if no command is used)
+* `color [color]`: set your color (note: this is mostly useless, since Tinychat no longer has nick colors)
+* `what`: print the current room and your nick
+
+#### Mod
+
 * `topic [topic]`: set room topic 
-* `list`: print user list
-* `banlist`: print banlist 
+* `adminsay` (or `a`) ` [adminmessage]`: say admin message
 * `ban [user]`: ban a user
 * `forgive [user]`: unban a user
 * `forgivename [user]`: unban a user and display banlist
-* `userinfo [user]`: get account name for user
+* `banlist`: print banlist 
 * `close [user]`: close a cam
+
+#### Other users
+
+* `list`: print user list
+* `userinfo [user]`: get account name for a user
 * `ignore [user]`: ignore a user
 * `unignore [user]`: unignore a user
-* `pm [user] [message]`: PM user with message
-* `nick [nick]`: set nick
-* `what`: print room and nick names
-* `color [color]`: set color
-* `time [timeformat]`: set time format
-* `title [title]`: set window title
-* `/`: reset window title
-* `notifications` (or `notes`) ` [setting]`: toggle notifications display or set on/off
+
+#### Room
+
 * `playyoutube` (or `yt`) ` [URL]`: play video from URL or view last-played video
 * `stopyoutube` 
 * `playsoundcloud`  (or `sc`) ` [URL]`: play track from URL or view last-played track
 * `stopsoundcloud` 
+
+#### Client
+
+* `/`: reset window title (useful for clearing alerts)
+* `time [timeformat]`: set time format
+* `title [title]`: set window title
+* `notifications` (or `notes`) ` [setting]`: toggle notifications display or set on/off
 * `sys [shell command]`: runs a shell command
 * `quit`
 * `reconnect` 
@@ -80,9 +97,9 @@ Thanks to the people who have helped make this project possible either by submit
 - [Aida](https://github.com/Autotonic)
 - [TechWhizZ199](https://github.com/TechWhizZ199)
 
-
 ### To-do
 
+ - Do all the stuff labeled "todo" in the code.
  - Allow bots to use all module features/commands
  - Write full command documentation
  - Add stream support
