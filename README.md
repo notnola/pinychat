@@ -22,6 +22,8 @@ Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
 All arguments optional.
 
+Tinychat.com room URLs are also accepted for `ROOM`.
+
 See also the [Commands](#commands) section below.
 
 `bot.py` currently only provides a small subset of the module's features/commands. Full module support will be integrated eventually.

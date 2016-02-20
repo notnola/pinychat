@@ -160,6 +160,14 @@ for o, a in options:
         print("       tinychat.py NICK ROOM\n")
         raise SystemExit
 
+# If room argument is a URL
+if "tinychat.com/" in roomnameArg:
+    # todo: replace this all with regex
+    tmp = roomnameArg.split(".com/")[1]
+    if ("?" in tmp): tmp = tmp.split("?")[0]
+    if ("#" in tmp): tmp = tmp.split("#")[0]
+    roomnameArg = tmp
+
 # COLORNAME and COLORNUMBER list (the commented one)
 COLORS_DICT = { 
 "dark blue": "#1965b6", #0 Color numbers
@@ -240,10 +248,7 @@ class TinychatRoom():
     # Manages a single room connection
     def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
         self.room = room
-        if username == None:
-            self.username = ""
-        else:
-            self.username = username
+        self.username = username
         self.nick = nick
         self.passwd = passwd
         self.roomPassword = roomPassword
