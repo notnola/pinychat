@@ -371,7 +371,7 @@ class TinychatRoom():
                             
                             # MESSAGE HANDLING #
                             messageIsPM = 0
-                            if recipient.lower() == self.nick.lower():
+                            if recipient == self.nick:
                                 message.pm = True
                                 if message.msg.startswith("/msg ") and len(message.msg.split(" ")) >= 2: message.msg = " ".join(message.msg.split(" ")[2:])
                                 # If message is a userinfo request
@@ -474,14 +474,14 @@ class TinychatRoom():
                             user = self._getUser(pars[i*2 + 2])
                             user.avon = True
                     elif cmd == "quit":
-                        user = self.users[pars[0].lower()]
-                        del self.users[pars[0].lower()]
+                        user = self.users[pars[0]]
+                        del self.users[pars[0]]
                         self.onQuit(user)
                         tmp = 1
                         if self.notificationsOn == False: tmp = 0
                         self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.", tmp)
                     elif cmd == "kick":
-                        user = self.users[pars[1].lower()]
+                        user = self.users[pars[1]]
                         self.onBan(user)
                         if user.nick == self.nick:
                             continue
@@ -516,8 +516,8 @@ class TinychatRoom():
         self.connect(True)
 
     def _getUser(self, nick):
-        if not nick.lower() in self.users.keys(): self.users[nick.lower()] = TinychatUser(nick)
-        return self.users[nick.lower()]
+        if not nick in self.users.keys(): self.users[nick] = TinychatUser(nick)
+        return self.users[nick]
 
     def adminsay(self, msg):
         self._sendCommand("owner_run",[u"notice" + msg.replace(" ", "%20")])
@@ -541,7 +541,6 @@ class TinychatRoom():
         debugPrint("CLIENT: " + str(msg), str(self.room))
         self.connection.writer.write(msg)
         self.connection.writer.flush()
-
 
     def say(self, msg):
         if self.delayMessageTrue == 1: time.sleep(self.delayMessageAmount)
