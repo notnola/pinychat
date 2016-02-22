@@ -21,13 +21,20 @@ from os import system
 #   Default settings
 #   Config file
 #   Argument handling
+# CLASSES
+#   Functions used by commands
 # MESSAGE HANDLING
 #   If message is a userinfo request
 #   If message is an incoming PM
 #   If message is media command
 #   If message is not from ignored user (i.e. all other messages)
 #       Mentions
-# LIST OF COMMANDS
+# MAIN
+#   Console colors
+#   Command handling
+
+
+
 
 # INIT
 # Python version check: cheking for 2 or 3
@@ -217,6 +224,7 @@ def setWindowTitle(title, firstRun=0): # find a way to get this in one of the cl
     else:
         system("echo -e '\033]2;''" + title + "''\007'")
 
+# CLASSES
 class TinychatMessage():
     def __init__(self, msg, nick, user=None, recipient=None, color=None, pm=False):
         self.msg = msg
@@ -542,6 +550,7 @@ class TinychatRoom():
         self.connection.writer.write(msg)
         self.connection.writer.flush()
 
+# Functions used by commands
     def say(self, msg):
         if self.delayMessageTrue == 1: time.sleep(self.delayMessageAmount)
         msg = self.prependMessage + msg
@@ -1101,6 +1110,7 @@ Usage: /list [OPTIONS]
             rr = r.replace("\\", "")
             self._sendCommand("cauth", [u"" + rr])
 
+# MAIN
 if __name__ == "__main__":
     if roomnameArg == 0:
         roomnameArg = raw_input("Enter room name: ")
@@ -1117,6 +1127,7 @@ if __name__ == "__main__":
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
+    # Console colors
     colorama.init() # todo: move this whole section somewhere else
     # nicks
     if highContrast == True:
@@ -1162,7 +1173,7 @@ if __name__ == "__main__":
                         pars = parts[1:]
                         par = " ".join(parts[1:])
                     
-                    # LIST OF COMMANDS
+                    # Command handling
                     if cmd.lower() == "publish":
                         room._sendCreateStream()
                         room._sendPublish()
