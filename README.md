@@ -46,6 +46,7 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 * `say [message]`: say message (this is the default command if no command is used)
 * `color [color]`: set your color (note: this is mostly useless, since Tinychat no longer has nick colors)
 * `what`: print the current room and your nick
+* `publish`: open your cam (close with `close`)
 
 #### Mod
 

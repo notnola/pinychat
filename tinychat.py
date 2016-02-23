@@ -812,7 +812,16 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
         self._sendCommand("banlist", [])
 
     def close(self, nick):
-        self._sendCommand("owner_run", [ u"_close" + nick])
+        if nick == "?":
+            print(ssS+"""\
+Description: Close a cam
+Usage: /close [OPTIONS]
+    NICK     Close NICK
+    [blank]  If blank, close your own cam
+"""+Sss)
+            return
+        if nick == "": self._sendCloseStream() # close yours 
+        else: self._sendCommand("owner_run", [ u"_close" + nick])
 
     def ban(self, nick):
         if nick not in self.users.keys():
