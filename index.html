@@ -1,9 +1,140 @@
-<html></htnl><script type="text/javascript">
-  var tinychat = { room: "ccpd", join: "auto"};
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://developers.facebook.com/schema/">
+<head>
+<title>Tinychat</title>
+
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<style type='text/css'>
+body
+{
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#chat,
+object
+{
+	width: 100%;
+	height: 100%;
+	position: fixed;
+}
+.tinychat_embed
+{
+	width: 100%;
+        height: 100%;
+}
+</style>
+
+<link rel="stylesheet" href="http://tinychat.com/public/css/rooms/jquery.my-tc-modal.css?v=114214" type="text/css" media="screen" />
+
+<script type='text/javascript' src="http://tinychat.com/public/js/jquery.js?v=2.2.min.a"></script>
+<script type='text/javascript' src="http://tinychat.com/public/js/rooms/jquery.my-tc-modal.js"></script>
+
+
+</head>
+<body>
+
+<script src="colormaybechat.js"></script>
+<script type='text/javascript'>
+var embed;
+function calcBlocks()
+{
+        $('#myrecaptcha').css('margin-left', (($('#chat').outerWidth() - 5) / 2 - 175) + "px" );
+}
+
+$(document).ready(function()
+{
+        $(window).resize(calcBlocks);
+});
+
+function ShowRecaptcha(token) {
+	var recaptcha =	'<div id="myrecaptcha" style="min-width: 350px; position: absolute; z-index: 100; margin-top: 200px;background-color: white;padding: 30px;"><h1>We\'re almost ready for you</h1><div style="color: gray;margin-top: 10px;">We just want to make sure you\'re not a killer robot from the future</div><form name="recaptcha_form" id="recaptcha_form" action="/cauth/recaptcha" method="post"><div class="g-recaptcha" data-callback="validateRecaptchaForm" data-sitekey="6Lc4GwkTAAAAALAXMUOWS6w7vgutx7vFAe9a7QuL" style="transform:scale(0.9);transform-origin:0;-webkit-transform:scale(0.9);transform:scale(0.9);-webkit-transform-origin:0 0;transform-origin:0 0;"></div><input type="hidden" name="token" id="myrecaptcha_token" value="' + token + '"><p class="submit"><a href="#" onclick="skipCaptcha()" style="color:grey;text-decoration:underline;">Skip this and join anonymously</a></p></form><script src="https://www.google.com/recaptcha/api.js"></div>';
+    $('#chat').prepend(recaptcha);
+    calcBlocks();
+}
+
+function ShowProfileInfo(profile_name)
+{
+   $(tcmodal).data('plugin_tcmodal').open(profile_name);
+}
+
+function HideRecaptchaAndProceed() {
+    $('#myrecaptcha').remove();
+    CaptchaSolvedSuccessfully();
+}
+
+function skipCaptcha() {
+    HideRecaptchaAndProceed();
+    return false;
+}
+
+function CaptchaSolvedSuccessfully()
+{
+    embed.getApplication().setRoomHash();
+}
+
+function validateRecaptchaForm() {
+    var frm = $('#recaptcha_form');
+    $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                if (data == 'ok') {
+                	HideRecaptchaAndProceed();
+                }
+            }
+    });
+
+	return false;
+}
+
+function getUrlVars()
+{
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++)
+        {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+}
+
+$(document).ready(function()
+{
+//	if(self==top)
+//	{
+//		window.location="http://tinychat.com/";
+//	}
+  roomname = window.prompt("Enter a room name: ")
+	var data = getUrlVars();
+	data['target'] = "client";
+	data['desktop'] = "true";
+	data['room'] = ccpd;
+	data['chatSmileys'] = "false";
+	embed = tinychat(data);
+});
 </script>
-<script src="https://tinychat.com/js/embed.js">
-</script>
-<div id="client">
-  <a href="http://tinychat.com">video chat</a>
+
+<div id="chat">
+<div id="client" style="text-align: center;"><div id="flash_warning" style='z-index:555;'><p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p></div></div>
+ </div>
+
+ <div style="display:none;" class="my-tc-modal">
+    <div class="my-tc-longcontent">
+        <div class="my-tc-modal-close"></div>
+
+    </div>
 </div>
+
+<script type="text/javascript">
+    var tcmodal = $('.my-tc-modal').tcmodal();
+</script>
+
+</body>
 </html>
