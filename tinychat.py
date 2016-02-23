@@ -1027,6 +1027,12 @@ Usage: /list [OPTIONS]
         debugPrint("CLIENT: " + str(msg), str(self.room))
         self.connection.writer.writepublish(msg)
         self.connection.writer.flush()
+        
+    def _sendCloseStream(self):
+        msg = {"msg": rtmp_protocol.DataTypes.COMMAND, "command": [u"" + "closeStream", 0, None]}
+        debugPrint("CLIENT: " + str(msg), str(self.room))
+        self.connection.writer.writepublish(msg)
+        self.connection.writer.flush()
 
     def __authHTTP(self): #todo - Rework this Funtions
         self.headers = {'Host': 'tinychat.com',
