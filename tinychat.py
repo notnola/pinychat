@@ -801,9 +801,11 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
 
     def setNick(self, nick=None):
         if not nick: nick = self.nick
-        self.nick = nick
-        self._sendCommand("nick", [u"" + nick])
-        self.windowTitle(nick)
+        if nick not in room.users.keys():
+            self.nick = nick
+            self._sendCommand("nick", [u"" + nick])
+            self.windowTitle(nick)
+        else: print(ssS+"--- Nick already in use ---"+Sss)
 
     def setTopic(self, t):
         self._sendCommand("topic", [u"" + str(t)])
