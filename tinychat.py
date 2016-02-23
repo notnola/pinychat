@@ -497,6 +497,8 @@ class TinychatRoom():
                     elif cmd == "oper":
                         user = self._getUser(pars[1])
                         user.oper = True
+                    elif cmd == "from_owner":
+                        self._chatlog(datetime.now().strftime(timeformat) + " " + pars[0].partition("notice")[2].replace("%20", " "))
             except Exception as e:
                 debugPrint(str(e), self.room)
 
