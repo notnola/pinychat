@@ -18,6 +18,7 @@ LOG_BASE_DIRECTORY | log/ | string
 DEBUG_CONSOLE | 0 | int bool
 DEBUG_LOG | 0 | int bool
 CHAT_LOGGING | 1 | int bool
+textEditor | gedit | string
 highContrast | 0 | int bool
 timeOnRight | 0 | int bool
 reCaptchaShow | 0 | int bool

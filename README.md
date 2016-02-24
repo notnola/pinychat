@@ -78,6 +78,7 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 * `time [timeformat]`: set time format
 * `title [title]`: set window title
 * `notifications` (or `notes`) ` [setting]`: toggle notifications display or set on/off
+* `log`: open chatlog in external editor (see textEditor setting)
 * `sys [shell command]`: runs a shell command
 * `quit`
 * `reconnect` 

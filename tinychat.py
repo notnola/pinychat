@@ -70,6 +70,7 @@ defaultConfig = {
     "DEBUG_CONSOLE": False,
     "DEBUG_LOG": False,
     "CHAT_LOGGING": True,
+    "textEditor": "gedit",
     "highContrast": False,
     "timeOnRight": False,
     "reCaptchaShow": False,
@@ -812,6 +813,9 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
     def setTopic(self, t):
         self._sendCommand("topic", [u"" + str(t)])
 
+    def openChatlog(self):
+        self._chatlog("", "open")
+
     def banlist(self):
         self._sendCommand("banlist", [])
 
@@ -1016,8 +1020,12 @@ Usage: /list [OPTIONS]
 
     def _chatlog(self, msg, echo=1):
         if self.echo2 and echo == 1: print(msg)
-        msg = msg.replace("[36m", "").replace("[0m", "").replace("[33m", "").replace("[1m", "")
-        if self.chatlogging:
+        if echo == "open":
+            logfile = LOG_BASE_DIRECTORY + self.room + "/chatroom.log"
+            if os.name == "nt": system('"' + logfile.replace('/', '\\') + '"')
+            else: system(textEditor + ' "' + logfile + '"')
+        elif self.chatlogging:
+            msg = msg.replace("[36m", "").replace("[0m", "").replace("[33m", "").replace("[1m", "") # strips ASCII escape codes added by console colors
             d = LOG_BASE_DIRECTORY + "/" + self.room + "/"
             if not os.path.exists(d):
                 os.makedirs(d)
@@ -1282,6 +1290,8 @@ if __name__ == "__main__":
                         room.adminsay(par)
                     elif cmd.lower() == "sys":
                         system(" ".join(pars))
+                    elif cmd.lower() == "log":
+                        room.openChatlog()
                     elif cmd.lower() == "delay":
                         room.setMessageDelay(par)
             else:
