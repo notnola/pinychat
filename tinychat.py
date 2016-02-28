@@ -1207,7 +1207,7 @@ if __name__ == "__main__":
                         room.say(par)
                     elif cmd.lower() == "pre":
                         room.setPrepend(pars)
-                    elif cmd.lower() == "userinfo":
+                    elif cmd.lower() == "userinfo" or cmd.lower() == "whois":
                         room.userinfo(par)
                     elif cmd.lower() == "alert":
                         room.setMentions(pars)
@@ -1234,7 +1234,9 @@ if __name__ == "__main__":
                         else:
                             print(ssS+"Argument required."+Sss)
                     elif cmd.lower() == "what":
-                        print(ssS+"Room: " + room.room + "\tNick: " + room.nick+Sss)
+                        if (room.username == None or room.username == 0 or room.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
+                        else: username = " (" + room.username + ")"
+                        print(ssS+room.nick + username + " in " + room.room+Sss)
                     elif cmd.lower() == "nick":
                         room.setNick(par)
                     elif cmd.lower() == "color":

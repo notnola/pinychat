@@ -61,7 +61,7 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 #### Other users
 
 * `list`: print user list
-* `userinfo [user]`: get account name for a user
+* `userinfo [user]` or `whois`: get account name for a user
 * `ignore [user]`: ignore a user
 * `unignore [user]`: unignore a user
 
