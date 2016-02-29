@@ -257,7 +257,7 @@ class TinychatRoom():
     # Manages a single room connection
     def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
         self.room = room
-        self.username = username
+        self.username = username.lower()
         self.nick = nick
         self.passwd = passwd
         self.roomPassword = roomPassword
