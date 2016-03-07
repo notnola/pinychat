@@ -321,8 +321,8 @@ class TinychatRoom():
             webbrowser.open(urll)
             if (self.username == None or self.username == 0 or self.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
             else: username = " (" + self.username + ")"
-            raw_input("Ready to connect as " + ooO+self.nick+Ooo + username + " to " + ooO+self.room+Ooo + ".\nPress enter when the captcha has been solved.")
             if reCaptchaShow == True: print(urll)
+            raw_input("Ready to connect as " + ooO+self.nick+Ooo + username + " to " + ooO+self.room+Ooo + ".\nPress enter when the captcha has been solved.")
             self.timecookie = self.__getEncMills()
             self.connect()
 
