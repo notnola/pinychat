@@ -257,7 +257,8 @@ class TinychatRoom():
     # Manages a single room connection
     def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
         self.room = room
-        self.username = username.lower()
+        if username != None: self.username = username.lower()
+        else: self.username = username
         self.nick = nick
         self.passwd = passwd
         self.roomPassword = roomPassword
@@ -1149,7 +1150,8 @@ if __name__ == "__main__":
            passwordArg = raw_input("Enter password (optional): ")
         # if colorArg == 0:
            # colorArg = raw_input("Enter color (optional): ")
-
+    if usernameArg == 0: usernameArg = ""
+    if passwordArg == 0: passwordArg = ""
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
