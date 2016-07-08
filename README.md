@@ -1,14 +1,34 @@
 # Pinychat
 
+### *Pinychat is now DEPRECIATED, please use the following libraries and bot solutions*
+
+**Library**:
+[pinylib library](https://github.com/nortxort/pinylib)
+
+**Bot solution**:
+[pinybot](https://github.com/GoelBiju/pinybot/)
+
+
+## Pinychat Legacy
+
+Original developer - NotNola
+Edited - SwiftSwathSee
+Legacy - GoelBiju
+
 Pinychat is a Python module and client that allows you to easily interface with Tinychat.com. 
 
-Features: commandline arguments, room logging, mod actions, public/private messages, user ignoring, dummy cams, and much more.
+Features:
+		* commandline arguments
+		* room logging
+		* mod actions
+		* public/private messages
+		* user ignoring, dummy cams etc.
 
 ### Requirements 
 
-* 32bit install of Python 2.7
-* [requests] - https://github.com/kennethreitz/requests 
-* [colorama] - https://github.com/tartley/colorama
+* [Python 2.7](https://www.python.org/download/releases/2.7/) **(preferrably)**
+* [requests](https://github.com/kennethreitz/requests)
+* [colorama](https://github.com/tartley/colorama)
 
     ```sh
     # pip install requests 
@@ -18,7 +38,8 @@ Features: commandline arguments, room logging, mod actions, public/private messa
 ### Usage
 
 #### Startup
-All arguments optional.
+
+All arguments optional, the library can be initialised without these (pertinent information will be asked on startup).
 
 Shorthand (quick mode): `tinychat.py NICK ROOM`  
 Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
@@ -89,22 +110,21 @@ You can optionally configure the module via the `pinychat.ini` file. See [settin
 
 ### Development
 
-Want to contribute? Feel free to make pull requests and issues at your discretion, or contact me at notnola@openmailbox.com!
+Want to contribute? Feel free to make pull requests and issues at your convenience, or contact me at notnola@openmailbox.com!
 
 ### Contributors
 Thanks to the people who have helped make this project possible either by submitting pull requests, helping in the reversing process, or just with raw support. If you create a pull requests and it gets approved, please feel free to add your name to this list!
 - [swiftSwathSee](https://github.com/swiftSwathSee)
-- [James Koss](http://www.jameskoss.com)
-- [Lord Gaben]
+- [James Koss](https://github.com/phuein)
+- Lord Gaben
 - [Aida](https://github.com/Autotonic)
-- [TechWhizZ199](https://github.com/TechWhizZ199)
+- [GoelBiju](https://github.com/GoelBiju)
 
 ### To-do
 
- - Do all the stuff labeled "todo" in the code.
- - Allow bots to use all module features/commands
- - Write full command documentation
- - Add stream support
- - Write tests
- - Write better debug code
- - Add better comments / clean up code base
+ - Todo's in the code should be first priority,
+ - integrate old bot and extension back into the library,
+ - allow bots to use all module features,
+ - write better debug code,
+ - add better comments / clean up code base,
+ - add/complete PEP8 tweaks to the code.
