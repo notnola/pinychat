@@ -22,6 +22,7 @@ import rtmp_protocol_base
 import socket
 import logging
 
+
 class FileDataTypeMixIn(pyamf.util.pure.DataTypeMixIn):
     """
     Provides a wrapper for a file object that enables reading and writing of raw
@@ -44,6 +45,7 @@ class FileDataTypeMixIn(pyamf.util.pure.DataTypeMixIn):
     def at_eof(self):
         return False
 
+
 class DataTypes:
     """ Represents an enumeration of the RTMP message datatypes. """
     NONE = -1
@@ -53,6 +55,7 @@ class DataTypes:
     SET_PEER_BANDWIDTH = 6
     SHARED_OBJECT = 19
     COMMAND = 20
+
 
 class SOEventTypes:
     """ Represents an enumeration of the shared object event types. """
@@ -64,6 +67,7 @@ class SOEventTypes:
     DELETE = 9
     USE_SUCCESS = 11
 
+
 class UserControlTypes:
     """ Represents an enumeration of the user control event types. """
     STREAM_BEGIN = 0
@@ -73,6 +77,7 @@ class UserControlTypes:
     STREAM_IS_RECORDED = 4
     PING_REQUEST = 6
     PING_RESPONSE = 7
+
 
 class RtmpReader:
     """ This class reads RTMP messages from a stream. """
@@ -140,9 +145,9 @@ class RtmpReader:
         # Decode the message based on the datatype present in the header
         ret = {'msg':header.datatype}
         # superDebug("ret", ret)
+
         if ret['msg'] == DataTypes.USER_CONTROL:
             # superDebug("header.datatype enum", "USER_CONTROL")
-
             ret['event_type'] = body_stream.read_ushort()
             ret['event_data'] = body_stream.read()
 
@@ -150,10 +155,9 @@ class RtmpReader:
             # superDebug("event_data", ret['event_data'])
         elif ret['msg'] == DataTypes.WINDOW_ACK_SIZE:
             # superDebug("header.datatype enum", "WINDOW_ACK_SIZE")
-
             ret['window_ack_size'] = body_stream.read_ulong()
-
             # superDebug("window_ack_size", ret['window_ack_size'])
+
         elif ret['msg'] == DataTypes.SET_PEER_BANDWIDTH:
             # superDebug("header.datatype enum", "SET_PEER_BANDWIDTH")
 
@@ -162,6 +166,7 @@ class RtmpReader:
 
             # superDebug("window_ack_size", ret['window_ack_size'])
             # superDebug("limit_type", ret['limit_type'])
+
         elif ret['msg'] == DataTypes.SHARED_OBJECT:
             # superDebug("header.datatype enum", "SHARED_OBJECT")
 
@@ -188,22 +193,20 @@ class RtmpReader:
 
         elif ret['msg'] == DataTypes.COMMAND:
             # superDebug("header.datatype enum", "COMMAND")
-
             decoder = pyamf.amf0.Decoder(body_stream)
             commands = []
             while not body_stream.at_eof():
                 commands.append(decoder.readElement())
             ret['command'] = commands
-        #elif ret['msg'] == DataTypes.NONE:
-        #    print 'WARNING: message with no datatype received.', header
-        #    return self.next()
 
+        # elif ret['msg'] == DataTypes.NONE:
+        #     print 'WARNING: message with no datatype received.', header
+        #     return self.next()
             # superDebug("command", ret['command'])
+
         elif ret['msg'] == DataTypes.SET_CHUNK_SIZE:
             # superDebug("header.datatype enum", "SET_CHUNK_SIZE")
-
             ret['chunk_size'] = body_stream.read_ulong()
-
             # superDebug("chunk_size", ret['chunk_size'])
         else:
             assert False, header
@@ -260,6 +263,7 @@ class RtmpReader:
 
         return event
 
+
 class RtmpWriter:
     """ This class writes RTMP messages into a stream. """
 
@@ -299,6 +303,7 @@ class RtmpWriter:
             # superDebug("window_ack_size", message['window_ack_size'])
             #
             body_stream.write_ulong(message['window_ack_size'])
+
         elif datatype == DataTypes.SET_PEER_BANDWIDTH:
             # superDebug("enum", "SET_PEER_BANDWIDTH")
             # superDebug("window_ack_size", message['window_ack_size'])
@@ -306,6 +311,7 @@ class RtmpWriter:
 
             body_stream.write_ulong(message['window_ack_size'])
             body_stream.write_uchar(message['limit_type'])
+
         elif datatype == DataTypes.COMMAND:
             # superDebug("enum", "COMMAND")
 
@@ -349,6 +355,7 @@ class RtmpWriter:
 
             body_stream.write_ushort(message['event_type'])
             body_stream.write(message['event_data'])
+
         elif datatype == DataTypes.WINDOW_ACK_SIZE:
             # superDebug("enum", "WINDOW_ACK_SIZE")
             # superDebug("window_ack_size", message['window_ack_size'])
@@ -361,12 +368,14 @@ class RtmpWriter:
 
             body_stream.write_ulong(message['window_ack_size'])
             body_stream.write_uchar(message['limit_type'])
+
         elif datatype == DataTypes.COMMAND:
             # superDebug("enum", "COMMAND")
 
             for command in message['command']:
                 # superDebug("command iteration", command)
                 encoder.writeElement(command)
+
         elif datatype == DataTypes.SHARED_OBJECT:
             # superDebug("enum", "SHARED_OBJECT")
             # superDebug("obj_name", message['obj_name'])
@@ -422,7 +431,7 @@ class RtmpWriter:
         # superDebug("body", body)
 
         # Values that just work. :-)
-        if datatype >= 1 and datatype <= 7:
+        if 7 >= datatype >= 1:
             channel_id = 2
             stream_id = 0
         else:
@@ -458,7 +467,7 @@ class RtmpWriter:
         # superDebug("body", body)
 
         # Values that just work. :-)
-        if datatype >= 1 and datatype <= 7:
+        if 7 >= datatype >= 1:
             channel_id = 2
             stream_id = 1
         else:
@@ -476,7 +485,7 @@ class RtmpWriter:
 
         # superDebug("header", header)
 
-        for i in xrange(0,len(body),self.chunk_size):
+        for i in xrange(0, len(body), self.chunk_size):
             chunk = body[i:i+self.chunk_size]
             self.stream.write(chunk)
             if i+self.chunk_size < len(body):
@@ -565,6 +574,7 @@ class FlashSharedObject:
 
     def on_message(self, data):
         pass
+
 
 class RtmpClient:
     """ Represents an RTMP client. """
@@ -657,12 +667,7 @@ class RtmpClient:
         self.writer.write(msg)
         self.writer.flush()
 
-        while True:
-            msg = self.reader.next()
-            if self.handle_message_pre_connect(msg):
-                break
-
-    def call(self, proc_name, parameters = {}, trans_id = 0):
+    def call(self, proc_name, parameters={}, trans_id=0):
         """ Runs remote procedure calls (RPC) at the receiving end. """
         msg = {
             'msg': DataTypes.COMMAND,
@@ -683,20 +688,28 @@ class RtmpClient:
         if msg['msg'] == DataTypes.COMMAND:
             assert msg['command'][0] == '_result', msg
             assert msg['command'][1] == 1, msg
-            assert msg['command'][3]['code'] == \
-                'NetConnection.Connect.Success', msg
+            assert msg['command'][3]['code'] == 'NetConnection.Connect.Success', msg
             return True
+
         elif msg['msg'] == DataTypes.WINDOW_ACK_SIZE:
             assert msg['window_ack_size'] == 2500000, msg
+            return True
+
         elif msg['msg'] == DataTypes.SET_PEER_BANDWIDTH:
             assert msg['window_ack_size'] == 2500000, msg
             assert msg['limit_type'] == 2, msg
+            return True
+
         elif msg['msg'] == DataTypes.USER_CONTROL:
             assert msg['event_type'] == UserControlTypes.STREAM_BEGIN, msg
             assert msg['event_data'] == '\x00\x00\x00\x00', msg
+            return True
+
         elif msg['msg'] == DataTypes.SET_CHUNK_SIZE:
-            assert msg['chunk_size'] > 0 and msg['chunk_size'] <= 65536, msg
+            assert 65536 >= msg['chunk_size'] > 0, msg
             self.reader.chunk_size = msg['chunk_size']
+            self.writer.chunk_size = msg['chunk_size']
+            return True
         else:
             assert False, msg
 

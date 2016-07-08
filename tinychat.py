@@ -1,4 +1,10 @@
+
+
+# pinychat Legacy version
+# Originally developed by NotNola. Modified by SwiftSwathSee. Legacy edit by GoelBiju (https://github.com/GoelBiju)
+
 # Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR
+
 import rtmp_protocol
 import requests
 import random
@@ -9,35 +15,30 @@ import socket
 import webbrowser
 from datetime import datetime
 import colorama
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 from os import system
 
 # Table of contents...(incomplete)
-#
-# INIT
+# INIT:
 #   Python version check
 #   Base room variables
-# SETTINGS
+# SETTINGS:
 #   Default settings
 #   Config file
 #   Argument handling
-# CLASSES
+# CLASSES:
 #   Functions used by commands
-# MESSAGE HANDLING
-#   If message is a userinfo request
+# MESSAGE HANDLING:
+#   If message is a user info request
 #   If message is an incoming PM
 #   If message is media command
 #   If message is not from ignored user (i.e. all other messages)
 #       Mentions
-# MAIN
+# MAIN:
 #   Console colors
 #   Command handling
 
-
-
-
-# INIT
-# Python version check: cheking for 2 or 3
+# Python version check: checking for 2 or 3.
 if sys.version_info[0] >= 3:
     get_input = input
     import _thread
@@ -73,28 +74,31 @@ defaultConfig = {
     "textEditor": "gedit",
     "highContrast": False,
     "timeOnRight": False,
-    "reCaptchaShow": False,
+    "reCaptchaShow": True,
     "windowTitlePrefix": "pinychat",
     "dateformat": "%Y-%m-%d %H:%M:%S",
     "timeformat": "%H:%M:%S",
     "delayMessage": False,
     "notificationsOn": True
-} # Regex for converting to settings.md:
+}
+
+# Regex for converting to settings.md:
 # 1. Find: /^\s*?\"(.*)\"\: \"?(.*)\"?[,|$|\r\n]/     Replace: /$1 | $2 | /
 # 2. Find: /\"?\, \| $/     Replace: / | /
 # 3. Find: /True/     Replace: /1/
 # 4. Find: /False/     Replace: /0/
 
-# Config file
-configfileName = "pinychat.ini"
+# Config file:
+configfileName = 'pinychat.ini'
 config = ConfigParser(allow_no_value=True)
 configCheck = config.read(configfileName)
-if configCheck == []: # make it if it doesn't exist
+
+if configCheck is []:  # make it if it doesn't exist
     configfile = open(configfileName, 'a') 
     configfile.write("[Main]\n")
     print("Created settings file " + configfileName)
     configfile.close()
-else: # if it exists, check for the section header. todo: if add the header if needed
+else:  # if it exists, check for the section header. todo: if add the header if needed
     configfile = open(configfileName, 'r') 
     firstline = configfile.readline()
     if firstline != "[Main]\n":
@@ -102,6 +106,7 @@ else: # if it exists, check for the section header. todo: if add the header if n
             if firstline != "[Main]":
                 print "Settings file must start with '[Main]' to be used"
     configfile.close()
+
 
 namespace = __import__(__name__)
 for key in defaultConfig.keys():
@@ -116,12 +121,15 @@ for key in defaultConfig.keys():
     try:
         tmpValue = config.getint("Main", settingName)
         makeVariable = 1
-    except NoOptionError: pass
-    except NoSectionError: pass
-    except ValueError: # if value is not a bool, it's probably a string, so use get()
+    except NoOptionError:
+        pass
+    except NoSectionError:
+        pass
+    except ValueError:  # if value is not a bool, it's probably a string, so use get()
         tmpValue = config.get("Main", settingName)
         makeVariable = 1
         settingValueIsString = 1
+
     if makeVariable == 1:
         if settingValueIsString == 0:
             if tmpValue == 1: settingValue = True
@@ -131,102 +139,117 @@ for key in defaultConfig.keys():
         setattr(namespace, settingName, settingValue)
         # print "set " + str(settingName) + " " + str(settingValue)
 
-if useDefaultAccount == True and usernameArg == 0:
-    usernameArg = DefaultAccountName
-    passwordArg = DefaultAccountPass
-if DefaultRoom != None and roomnameArg == 0:
-    roomnameArg = DefaultRoom
-if DefaultNick != None and nicknameArg == 0:
-    nicknameArg = DefaultNick
+if defaultConfig['useDefaultAccount'] is True and usernameArg is 0:
+    usernameArg = defaultConfig['DefaultAccountName']
+    passwordArg = defaultConfig['DefaultAccountPass']
+
+if defaultConfig['DefaultRoom'] is not None and roomnameArg is 0:
+    roomnameArg = defaultConfig['DefaultRoom']
+
+if defaultConfig['DefaultNick'] is not None and nicknameArg is 0:
+    nicknameArg = defaultConfig['DefaultNick']
 
 # Argument handling
 allArgs = sys.argv[1:]
 quickMode = 0
-if allArgs[0][0] != "-" and allArgs[1][0] != "-":
-    nicknameArg = allArgs[0]
-    roomnameArg = allArgs[1]
-    quickMode = 1
-    allArgs.remove(nicknameArg)
-    allArgs.remove(roomnameArg)
-    fakedArgs = ["-n", nicknameArg, "-r", roomnameArg] # since getopt doesn't play nicely with dashless options...
-    allArgs = fakedArgs + allArgs
+if len(allArgs) is not 0:
+    if allArgs[0][0] is not "-" and allArgs[1][0] is not "-":
+        nicknameArg = allArgs[0]
+        roomnameArg = allArgs[1]
+        quickMode = 1
+        allArgs.remove(nicknameArg)
+        allArgs.remove(roomnameArg)
+        fakedArgs = ["-n", nicknameArg, "-r", roomnameArg]  # since getopt doesn't play nicely with dashless options...
+        allArgs = fakedArgs + allArgs
 
-options, args = getopt.getopt(allArgs,"r:n:u:p:c:",["info", "help"])
+options, args = getopt.getopt(allArgs, "r:n:u:p:c:", ["info", "help"])
 for o, a in options:
-    if o == '-r':
+    if o is '-r':
         roomnameArg = a
-    elif o == '-n':
+    elif o is '-n':
         nicknameArg = a
-    elif o == '-u':
+    elif o is '-u':
         usernameArg = a
-    elif o == '-p':
+    elif o is '-p':
         passwordArg = a
-    elif o == '-c':
+    elif o is '-c':
         colorArg = a
-    elif o == "--info" or o == "--help":
+    elif o is "--info" or o == "--help":
         print("\nUsage: tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR")
         print("       tinychat.py NICK ROOM\n")
         raise SystemExit
 
 # If room argument is a URL
-if "tinychat.com/" in roomnameArg:
-    # todo: replace this all with regex
-    tmp = roomnameArg.split(".com/")[1]
-    if ("?" in tmp): tmp = tmp.split("?")[0]
-    if ("#" in tmp): tmp = tmp.split("#")[0]
-    roomnameArg = tmp
+if roomnameArg is str:
+    if "tinychat.com/" in roomnameArg:
+        # todo: replace this all with regex
+        try:
+            tmp = roomnameArg.split(".com/")[1]
+            if "?" in tmp:
+                tmp = tmp.split("?")[0]
+            if "#" in tmp:
+                tmp = tmp.split("#")[0]
+            roomnameArg = tmp
+        except Exception:
+            pass
 
-# COLORNAME and COLORNUMBER list (the commented one)
+
+# Color name and color number list (the commented one)
 COLORS_DICT = { 
-"dark blue": "#1965b6", #0 Color numbers
-"sky blue": "#32a5d9", #1
-"lime gray": "#7db257", #2
-"gold": "#a78901", #3
-"purple": "#9d5bb5", #4
-"dark purple": "#5c1a7a", #5
-"red": "#c53332", #6
-"maroon": "#821615", #7
-"gold gray": "#a08f23", #8
-"green": "#487d21", #9
-"pink": "#c356a3", #10
-"blue": "#1d82eb", #11
-"gold olive": "#919104", #12
-"turquoise": "#00a990", #13
-"pink gray": "#b9807f", #14
-"lime": "#7bb224", #15
+"dark blue": "#1965b6",  # 0 Color numbers
+"sky blue": "#32a5d9",  # 1
+"lime gray": "#7db257",  # 2
+"gold": "#a78901",  # 3
+"purple": "#9d5bb5",  # 4
+"dark purple": "#5c1a7a",  # 5
+"red": "#c53332",  # 6
+"maroon": "#821615",  # 7
+"gold gray": "#a08f23",  # 8
+"green": "#487d21",  # 9
+"pink": "#c356a3",  # 10
+"blue": "#1d82eb",  # 11
+"gold olive": "#919104",  # 12
+"turquoise": "#00a990",  # 13
+"pink gray": "#b9807f",  # 14
+"lime": "#7bb224",  # 15
 }
+
 TINYCHAT_COLORS = []
 firstRun = 1
 colorNames = sorted(COLORS_DICT.keys())
-for i in colorNames: # Dicts are unordered, this orders them and appends to TINYCHAT_COLORS so that the color numbers work
+# Dicts are unordered, this orders them and appends to TINYCHAT_COLORS so that the color numbers work.
+for i in colorNames:
     if firstRun == 0:
         x += 1
     else:
         x = 0
-    TINYCHAT_COLORS.append( COLORS_DICT[colorNames[x]] )
+    TINYCHAT_COLORS.append(COLORS_DICT[colorNames[x]])
     if x == 0:
         firstRun = 0
 
+
 def debugPrint(msg, room="unknown_room"):
-    if DEBUG_CONSOLE:
+    if defaultConfig['DEBUG_CONSOLE']:
         print("DEBUG: " + msg)
-    if DEBUG_LOG:
-        d = LOG_BASE_DIRECTORY + "/" + room + "/"
+    if defaultConfig['DEBUG_LOG']:
+        d = defaultConfig['LOG_BASE_DIRECTORY'] + "/" + room + "/"
         if not os.path.exists(d):
             os.makedirs(d)
         logfile = open(d + "debug.log", "a")
         logfile.write(msg + "\n")
         logfile.close()
 
-def setWindowTitle(title, firstRun=0): # find a way to get this in one of the classes?
+
+def setWindowTitle(title, firstRun=0):
     if firstRun != 0: title = windowTitlePrefix + ": " + title 
     if os.name == "nt":
         system("title " + title)
     else:
         system("echo -e '\033]2;''" + title + "''\007'")
 
-# CLASSES
-class TinychatMessage():
+
+# CLASSES:
+class TinychatMessage:
     def __init__(self, msg, nick, user=None, recipient=None, color=None, pm=False):
         self.msg = msg
         self.nick = nick
@@ -242,7 +265,8 @@ class TinychatMessage():
             pm = ""
         print(pm + self.recipient + ": " + self.nick + ": " + self.msg)
 
-class TinychatUser():
+
+class TinychatUser:
     def __init__(self, nick, id=None, color=None, lastMsg=None):
         self.nick = nick
         self.id = id
@@ -253,19 +277,23 @@ class TinychatUser():
         self.accountName = None
         self.swapCount = 0
 
-class TinychatRoom():
+
+class TinychatRoom:
     # Manages a single room connection
     def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
         self.room = room
-        if username != None: self.username = username.lower()
-        else: self.username = username
+        if username is not None:
+            self.username = username.lower()
+        else:
+            self.username = username
+
         self.nick = nick
         self.passwd = passwd
         self.roomPassword = roomPassword
         self.s = requests.session()
         self.__authHTTP()
-        self.autoop = self.__getAutoOp(room)
-        self.prohash = self.__getProHash(room)
+        self.autoop = self.__getAutoOp()
+        self.prohash = self.__getProHash()
         self.tcurl = self.__getRTMPInfo()
         tcurlsplits = self.tcurl.split("/tinyconf")                     # >>['rtmp://127.0.0.1:1936', '']
         tcurlsplits1 = self.tcurl.split("/")                            # >>['rtmp:', '', '127.0.0.1:1936', 'tinyconf']
@@ -276,14 +304,14 @@ class TinychatRoom():
         self.ip = tcurlsplits3[0]                                       # Defining RTMP Server IP
         self.port = int(tcurlsplits3[1])
         self.app = tcurlsplits1[3]                                      # Defining Tinychat FMS App
-        self.pageurl = "http://tinychat.com/" + room                    # Definging Tinychat's Room HTTP URL
-        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0657.swf?version=1.0.0.0657/[[DYNAMIC]]/8" #static
+        self.pageurl = "http://tinychat.com/" + room                    # Defining Tinychat's Room HTTP URL
+        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0668.swf?version=1.0.0.0668/[[DYNAMIC]]/8"
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
         
         # Set initial color (draft) - see section "Autoset initial color"
-        # if nickColor == 0:
+        # if nickColor is 0:
             # self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         # else:
             # self.color = COLORS_DICT[nickColor]
@@ -292,25 +320,30 @@ class TinychatRoom():
         self.topic = None
         self.users = {}
         self.echo = False # the old one
-        self.echo2 = __name__ == "__main__" # the new one!
-        self.chatlogging = CHAT_LOGGING
+        self.echo2 = __name__ == "__main__"  # the new one!
+        self.chatlogging = defaultConfig['CHAT_LOGGING']
         self.userID = None
         self.forgiveQueue = []
         self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
-        self.notificationsOn = notificationsOn
+        self.notificationsOn = defaultConfig['notificationsOn']
         self.pmsDict = {}
         self.mentions = [self.nick]
         self.prependMessage = ""
         self.delayMessageAmount = 1
-        if delayMessage: self.delayMessageTrue = 1
-        else: self.delayMessageTrue = 0
+
+        if defaultConfig['delayMessage']:
+            self.delayMessageTrue = 1
+        else:
+            self.delayMessageTrue = 0
 
     def _recaptcha(self):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'DNT': 1,
-                    'Connection': 'keep-alive'}
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                   'Accept-Language': 'en-US,en;q=0.5',
+                   'DNT': 1,
+                   'Connection': 'keep-alive'
+        }
+
         url = "http://tinychat.com/cauth/captcha"
         r = self.s.request(method="GET", url=url, headers=headers, cookies=self.cookies)
         if '"need_to_solve_captcha":0' in r.text:
@@ -320,10 +353,15 @@ class TinychatRoom():
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
-            if (self.username == None or self.username == 0 or self.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
-            else: username = " (" + self.username + ")"
-            if reCaptchaShow == True: print(urll)
-            raw_input("Ready to connect as " + ooO+self.nick+Ooo + username + " to " + ooO+self.room+Ooo + ".\nPress enter when the captcha has been solved.")
+            if self.username is None or self.username is 0 or self.username is "":
+                username = ""  # dupe of jf7k9... maybe make a usernameParenthesis function
+            else:
+                username = " (" + self.username + ")"
+            if defaultConfig['reCaptchaShow']:
+                print(urll)
+            raw_input("Ready to connect as " + ooO + self.nick + Ooo + username + " to " + ooO + self.room + Ooo +
+                      ".\nPress enter when the captcha has been solved.")
+
             self.timecookie = self.__getEncMills()
             self.connect()
 
@@ -338,14 +376,19 @@ class TinychatRoom():
             debugPrint("Room: " + str(self.room), str(self.room))
             debugPrint("AutoOp: " + str(self.autoop), str(self.room))
             try:
-                if (self.username == None or self.username == 0 or self.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
-                else: username = " (" + self.username + ")"
-                self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
+                if self.username is None or self.username is 0 or self.username is "":
+                    username = ""  # dupe of jf7k9... maybe make a usernameParenthesis function
+                else:
+                    username = " (" + self.username + ")"
+
+                self.connection.connect([self.room, self.autoop, u'show', u'tinychat',
+                                         self.username, "", self.timecookie])
                 self.connected = True
-                self._chatlog(" === Connected to " + str(self.room) + " as " + self.nick + username + " === " + datetime.now().strftime(dateformat))
+                self._chatlog(" === Connected to " + str(self.room) + " as " + self.nick + username +
+                              " === " + datetime.now().strftime(defaultConfig['dateformat']))
                 self.onConnect()
                 self._listen()
-            except Exception as e:
+            except Exception:
                 debugPrint("FAILED TO CONNECT", self.room)
                 self.onConnectFail()
 
@@ -353,154 +396,185 @@ class TinychatRoom():
         while self.connected:
             try:
                 msg = self.connection.reader.next()
-                debugPrint("SERVER: " + str(msg), str(self.room))
-                if msg['msg'] == rtmp_protocol.DataTypes.COMMAND:
-                    pars = msg['command']
-                    cmd = pars[0].encode("ascii", "ignore").lower()
-                    if len(pars) > 3:
-                        pars = pars[3:]
-                    else:
-                        pars = []
-                    for i in range(len(pars)):
-                        if type(pars[i]) == str: pars[i] = pars[i].encode("ascii", "ignore")
-                    if cmd == "privmsg":
-                        recipient = pars[0]
-                        message = pars[1]
-                        color = pars[2].lower().split(",")[0]
-                        nick = pars[3]
-                        m = self._decodeMessage(message)
-                        if len(m) > 0:
-                            if recipient[0] == "#":
-                                recipient = "^".join(recipient.split("^")[1:])
-                            else:
-                                recipient = "-".join(recipient.split("-")[1:])
-                            user = self._getUser(nick)
-                            message = TinychatMessage(m, nick, user, recipient, color)
-                            user.lastMsg = message
-                            user.color = color
-                            
-                            # MESSAGE HANDLING #
-                            messageIsPM = 0
-                            if recipient == self.nick:
-                                message.pm = True
-                                if message.msg.startswith("/msg ") and len(message.msg.split(" ")) >= 2: message.msg = " ".join(message.msg.split(" ")[2:])
-                                # If message is a userinfo request
-                                if message.msg.startswith("/userinfo ") and len(message.msg.split(" ")) >= 2:
-                                    if user.nick != self.nick:
-                                        ac = " ".join(message.msg.split(" ")[1:])
-                                        if ac == "$request":
-                                            self.onUserInfoRequest(user)
-                                        else:
-                                            user.accountName = ac
-                                            if self.room == ac: user.admin = True
-                                            self.onUserInfo(user)
-                                        message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
-                                        if str(user.nick) not in ignoreList:
-                                            self.windowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
-                                            global lastUserinfo
-                                            lastUserinfo = user.nick
-                                # If message is an incoming PM
+                print "-->", msg
+
+                if msg['msg'] == rtmp_protocol.DataTypes.SET_CHUNK_SIZE:
+                    self.connection.reader.chunk_size = msg['chunk_size']
+                    self.connection.writer.chunk_size = msg['chunk_size']
+                    print "New chunk size:", self.connection.writer.chunk_size
+                else:
+                    debugPrint("SERVER: " + str(msg), str(self.room))
+                    if msg['msg'] == rtmp_protocol.DataTypes.COMMAND:
+                        pars = msg['command']
+                        cmd = pars[0].encode("ascii", "ignore").lower()
+                        if len(pars) > 3:
+                            pars = pars[3:]
+                        else:
+                            pars = []
+                        for i in range(len(pars)):
+                            if type(pars[i]) is str:
+                                pars[i] = pars[i].encode("ascii", "ignore")
+
+                        if cmd == "privmsg":
+                            recipient = pars[0]
+                            message = pars[1]
+                            color = pars[2].lower().split(",")[0]
+                            nick = pars[3]
+                            m = self._decodeMessage(message)
+                            if len(m) > 0:
+                                if recipient[0] == "#":
+                                    recipient = "^".join(recipient.split("^")[1:])
                                 else:
-                                    messageIsPM = 1
-                                    self.onPM(user, message)                                    
-                                    self.addToPMsDict(str(user.nick), str(message.msg), datetime.now())
-                                    
-                                    if timeOnRight == 1 or timeOnRight == True: # print
-                                        self._chatlog(ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                    recipient = "-".join(recipient.split("-")[1:])
+                                user = self._getUser(nick)
+                                message = TinychatMessage(m, nick, user, recipient, color)
+                                user.lastMsg = message
+                                user.color = color
+
+                                # MESSAGE HANDLING #
+                                messageIsPM = 0
+                                if recipient == self.nick:
+                                    message.pm = True
+                                    if message.msg.startswith("/msg ") and len(message.msg.split(" ")) >= 2: message.msg = " ".join(message.msg.split(" ")[2:])
+                                    # If message is a userinfo request
+                                    if message.msg.startswith("/userinfo ") and len(message.msg.split(" ")) >= 2:
+                                        if user.nick != self.nick:
+                                            ac = " ".join(message.msg.split(" ")[1:])
+                                            if ac is "$request":
+                                                self.onUserInfoRequest(user)
+                                            else:
+                                                user.accountName = ac
+                                                if self.room is ac:
+                                                    user.admin = True
+                                                self.onUserInfo(user)
+
+                                            message.msg = ppP+" ! "+Ppp+ssS+message.msg+Sss
+                                            if str(user.nick) not in ignoreList:
+                                                self.windowTitle("/userinfo: " + datetime.now().strftime(timeformat) + " (" + str(user.nick) + ")")
+                                                global lastUserinfo
+                                                lastUserinfo = user.nick
+
+                                    # If message is an incoming PM
                                     else:
-                                        self._chatlog(datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg))
-                                    if str(user.nick) not in ignoreList: # window title
-                                        global lastPM
-                                        lastPM = str(user.nick)
-                                        if len(str(message.msg)) > 160: dots = "..."
-                                        else: dots = ""
-                                        self.windowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + dots)
-                            else:
-                                self.onMessage(user, message)
-                            # If message is media command
-                            if message.msg.startswith("/mbs "):
-                                tmp = message.msg.split(" ")
-                                if tmp[1] == "youTube":
-                                    global lastYT
-                                    lastYT = tmp[2]
-                                if tmp[1] == "soundCloud":
-                                    global lastSC
-                                    lastSC = tmp[2]
-                            # If message is not from ignored user (i.e. all other messages)
-                            if str(user.nick) not in ignoreList and messageIsPM == 0:
-                                # Mentions
-                                mentioned = 0
-                                for phrase in self.mentions:
-                                    if phrase in str(message.msg):
-                                        mentioned = 1
-                                        # mentionedPhrase += [phrase]
-                                        print ssS+"["+phrase+"]",
-                                if timeOnRight == 1 or timeOnRight == True:
-                                    self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                        messageIsPM = 1
+                                        self.onPM(user, message)
+                                        self.addToPMsDict(str(user.nick), str(message.msg), datetime.now())
+
+                                        if timeOnRight == 1 or timeOnRight == True: # print
+                                            self._chatlog(ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                        else:
+                                            self._chatlog(datetime.now().strftime(timeformat) + " " + ssS+str(user.nick)+" (PM):"+Sss+" " + str(message.msg))
+                                        if str(user.nick) not in ignoreList: # window title
+                                            global lastPM
+                                            lastPM = str(user.nick)
+                                            if len(str(message.msg)) > 160: dots = "..."
+                                            else: dots = ""
+                                            self.windowTitle("PM: " + datetime.now().strftime(timeformat) + " (" + lastPM + "): " + str(message.msg)[:160] + dots)
                                 else:
-                                    self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
-                    elif cmd == "registered":
-                        user = self._getUser(pars[0])
-                        user.id = pars[1]
-                        self.onRegister(user)
-                        self.userID = user.id
-                        user.accountName = self.username
-                    elif cmd == "join":
-                        user = self._getUser(pars[1])
-                        user.id = pars[0]
-                        self.onJoin(user)
-                        tmp = 1
-                        if self.notificationsOn == False: tmp = 0
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".", tmp)
-                    elif cmd == "joins":
-                        for i in range((len(pars) - 1) / 2):
-                            user = self._getUser(pars[i*2 + 2])
-                            user.id = pars[i*2 + 1]
-                    elif cmd == "joinsdone":
-                        self.sendCauth(self.userID)
-                        if self.nick: self.setNick()
-                    elif cmd == "topic":
-                        self.topic = pars[0].encode("ascii", "ignore")
-                        self.onTopic(self.topic)
-                        self._chatlog(datetime.now().strftime(timeformat) + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
-                    elif cmd == "nick":
-                        user = self._getUser(pars[0])
-                        old = user.nick
-                        user.nick = pars[1]
-                        if old.lower() in self.users.keys():
-                            del self.users[old]
-                            self.users[user.nick] = user
-                        self.onNickChange(user.nick, old, user)
-                        tmp = 1
-                        if self.notificationsOn == False: tmp = 0
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (old) + " is now known as " + str(user.nick) + ".", tmp)
-                    elif cmd == "notice":
-                        if str(pars[0]) == "avon":
-                            print(datetime.now().strftime(timeformat) + " " + (pars[2]) + " is now broadcasting.")
-                            user = self._getUser(pars[2])
-                            user.avon = True
-                    elif cmd == "avons":
-                        for i in range(int((len(pars) - 1) / 2)):
-                            user = self._getUser(pars[i*2 + 2])
-                            user.avon = True
-                    elif cmd == "quit":
-                        user = self.users[pars[0]]
-                        del self.users[pars[0]]
-                        self.onQuit(user)
-                        tmp = 1
-                        if self.notificationsOn == False: tmp = 0
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.", tmp)
-                    elif cmd == "kick":
-                        user = self.users[pars[1]]
-                        self.onBan(user)
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
-                    elif cmd == "banned":
-                        self._chatlog(datetime.now().strftime(timeformat) + " You have been disconnected from the room.")
-                    elif cmd == "oper":
-                        user = self._getUser(pars[1])
-                        user.oper = True
-                    elif cmd == "from_owner":
-                        self._chatlog(datetime.now().strftime(timeformat) + " " + pars[0].partition("notice")[2].replace("%20", " "))
+                                    self.onMessage(user, message)
+
+                                # If message is media command
+                                if message.msg.startswith("/mbs "):
+                                    tmp = message.msg.split(" ")
+                                    if tmp[1] == "youTube":
+                                        global lastYT
+                                        lastYT = tmp[2]
+                                    if tmp[1] == "soundCloud":
+                                        global lastSC
+                                        lastSC = tmp[2]
+                                # If message is not from ignored user (i.e. all other messages)
+                                if str(user.nick) not in ignoreList and messageIsPM == 0:
+                                    # Mentions
+                                    mentioned = 0
+                                    for phrase in self.mentions:
+                                        if phrase in str(message.msg):
+                                            mentioned = 1
+                                            # mentionedPhrase += [phrase]
+                                            print ssS+"["+phrase+"]",
+                                    if timeOnRight is 1 or timeOnRight:
+                                        self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
+                                    else:
+                                        self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(user.nick)+":"+Ooo+" " + str(message.msg))
+
+                        elif cmd == "registered":
+                            user = self._getUser(pars[0])
+                            user.id = pars[1]
+                            self.onRegister(user)
+                            self.userID = user.id
+                            user.accountName = self.username
+
+                        elif cmd == "join":
+                            user = self._getUser(pars[1])
+                            user.id = pars[0]
+                            self.onJoin(user)
+                            tmp = 1
+                            if not self.notificationsOn:
+                                tmp = 0
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".", tmp)
+
+                        elif cmd == "joins":
+                            print "in joins"
+                            for i in range((len(pars) - 1) / 2):
+                                user = self._getUser(pars[i*2 + 2])
+                                user.id = pars[i*2 + 1]
+
+                        elif cmd == "joinsdone":
+                            self.sendCauth(self.userID)
+                            if self.nick: self.setNick()
+
+                        elif cmd == "topic":
+                            self.topic = pars[0].encode("ascii", "ignore")
+                            self.onTopic(self.topic)
+                            self._chatlog(datetime.now().strftime(timeformat) + " The topic of " + str(self.room) + " is now \"" + str(self.topic) + ".\"")
+
+                        elif cmd == "nick":
+                            user = self._getUser(pars[0])
+                            old = user.nick
+                            user.nick = pars[1]
+                            if old.lower() in self.users.keys():
+                                del self.users[old]
+                                self.users[user.nick] = user
+                            self.onNickChange(user.nick, old, user)
+                            tmp = 1
+                            if not self.notificationsOn:
+                                tmp = 0
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + (old) + " is now known as " + str(user.nick) + ".", tmp)
+
+                        elif cmd == "notice":
+                            if str(pars[0]) == "avon":
+                                print(datetime.now().strftime(timeformat) + " " + (pars[2]) + " is now broadcasting.")
+                                user = self._getUser(pars[2])
+                                user.avon = True
+
+                        elif cmd == "avons":
+                            for i in range(int((len(pars) - 1) / 2)):
+                                user = self._getUser(pars[i*2 + 2])
+                                user.avon = True
+
+                        elif cmd == "quit":
+                            user = self.users[pars[0]]
+                            del self.users[pars[0]]
+                            self.onQuit(user)
+                            tmp = 1
+                            if self.notificationsOn is False:
+                                tmp = 0
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " left.", tmp)
+
+                        elif cmd == "kick":
+                            user = self.users[pars[1]]
+                            self.onBan(user)
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " was banned.")
+
+                        elif cmd == "banned":
+                            self._chatlog(datetime.now().strftime(timeformat) + " You have been disconnected from the room.")
+
+                        elif cmd == "oper":
+                            user = self._getUser(pars[1])
+                            user.oper = True
+
+                        elif cmd == "from_owner":
+                            self._chatlog(datetime.now().strftime(timeformat) + " " + pars[0].partition("notice")[2].replace("%20", " "))
+
             except Exception as e:
                 debugPrint(str(e), self.room)
 
@@ -525,11 +599,12 @@ class TinychatRoom():
         self.connect(True)
 
     def _getUser(self, nick):
-        if not nick in self.users.keys(): self.users[nick] = TinychatUser(nick)
+        if nick not in self.users.keys():
+            self.users[nick] = TinychatUser(nick)
         return self.users[nick]
 
     def adminsay(self, msg):
-        self._sendCommand("owner_run",[u"notice" + msg.replace(" ", "%20")])
+        self._sendCommand("owner_run", [u"notice" + msg.replace(" ", "%20")])
         self._chatlog("*[" + str(self.nick) + "] " + msg)
 
     def _decodeMessage(self, msg):
@@ -553,7 +628,8 @@ class TinychatRoom():
 
 # Functions used by commands
     def say(self, msg):
-        if self.delayMessageTrue == 1: time.sleep(self.delayMessageAmount)
+        if self.delayMessageTrue == 1:
+            time.sleep(self.delayMessageAmount)
         msg = self.prependMessage + msg
         self._sendCommand("privmsg", [u"" + self._encodeMessage(msg), u"" + self.color + ",en"])
         self._chatlog(datetime.now().strftime(timeformat) + " " + ooO+str(self.nick)+":"+Ooo+" " + msg)
@@ -571,20 +647,22 @@ Usage: /pre [OPTIONS]
         if input[0] == "!":
             self.prependMessage = ""
             print(ssS+"--- Prepend cleared ---"+Sss)
+
         elif input[0] == "@":
             if self.prependMessage == "":
                 print(ssS+"--- Prepend is not set ---"+Sss)
             else:
                 print(ssS+"--- Prepend is: '" + self.prependMessage + "' ---"+Sss)
+
         elif len(input) > 0:
             string = " ".join(input[0:])
-            if string.startswith("\\"): # escape characters
+            if string.startswith("\\"):  # escape characters
                 string = string[1:]
             self.prependMessage = string
             print(ssS+"--- Prepend is now: '" + self.prependMessage + "' ---"+Sss)
 
     def setMessageDelay(self, input):
-        if input == "?":
+        if input is "?":
             print(ssS+"""\
 Description: Manage message delay.
 Usage: /delay [OPTIONS]
@@ -597,17 +675,18 @@ Usage: /delay [OPTIONS]
 
         if input == "on":
             self.delayMessageTrue = 1
-            print(ssS+"--- Message delay on ---"+Sss)
+            print( ssS + "--- Message delay on ---"+Sss)
         elif input == "off":
             self.delayMessageTrue = 0
-            print(ssS+"--- Message delay off ---"+Sss)
+            print(ssS + "--- Message delay off ---"+Sss)
         else:
-            try: input = float(input)
-            except ValueError as e:
-                print(ssS+"--- Value must be a number ---"+Sss)
+            try:
+                input = float(input)
+            except ValueError:
+                print(ssS + "--- Value must be a number ---"+Sss)
                 return
             self.delayMessageAmount = input
-            print(ssS+"--- Message delay: " + str(input) + " seconds ---"+Sss)
+            print(ssS + "--- Message delay: " + str(input) + " seconds ---"+Sss)
             
     def setMentions(self, input):
         if input[0] == "?":
@@ -619,7 +698,7 @@ Usage: /alert [OPTIONS]
     l          List mentions
 """+Sss)
             return
-        print ssS,
+        print ssS
 
         cmd = input[0]
         string = " ".join(input[1:])
@@ -629,19 +708,24 @@ Usage: /alert [OPTIONS]
             for i in self.mentions:
                 print("'"+i+"'"),
             print "--- "
+
         elif cmd == "---":
             self.mentions = []
             print("--- Mentions cleared ---")
+
         elif cmd == "-":
             try:
                 self.mentions.remove(string)
                 print("--- Mention removed: '" + string + "' ---")
-            except: print "--- Error - mention doesn't exist? ---"
+            except:
+                print "--- Error - mention doesn't exist? ---"
         elif cmd == "+":
-            try: self.mentions.append(string)
-            except: print "--- Error ---"
+            try:
+                self.mentions.append(string)
+            except:
+                print "--- Error ---"
             print("--- Mention added: '" + string + "' ---")
-        print Sss,
+        print Sss
 
     def pm(self, msg, recipient, time=""):
         if recipient == "?":
@@ -659,14 +743,18 @@ Usage: /pm [USER] [MESSAGE]
             return
         if recipient == "list":
             numToShow = 0
-            try: numToShow = int(msg)
-            except ValueError as e: pass
-            print (ssS+"PMs list"+Sss)
+            try:
+                numToShow = int(msg)
+            except ValueError:
+                pass
+            print(ssS+"PMs list"+Sss)
             
-            sortedpmsDict = sorted(room.pmsDict.items()) # inefficient: maybe switch to multidimensional arrays instead of a dict, since arrays are already ordered
+            sortedpmsDict = sorted(room.pmsDict.items())  # inefficient: maybe switch to multidimensional arrays instead of a dict, since arrays are already ordered
             indexEnd = len(sortedpmsDict)
-            if numToShow > 0: indexStart = indexEnd-numToShow
-            else: indexStart = 0
+            if numToShow > 0:
+                indexStart = indexEnd-numToShow
+            else:
+                indexStart = 0
             
             for id, pm in sortedpmsDict[indexStart:indexEnd]:
                 dictNick = pm[0]
@@ -674,21 +762,27 @@ Usage: /pm [USER] [MESSAGE]
                 dictMsg = pm[1]
                 print(ssS+"-"+Sss + "[" + dictTime + "] " + ooO+dictNick+": "+Ooo + dictMsg)
             return
+
         if recipient in room.users:
-            if time == "": time = datetime.now()
-            # try:
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","n" + str(self._getUser(recipient).id) +"-"+ recipient])
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),self.color+",en","b" + str(self._getUser(recipient).id) +"-"+ recipient])
-            self._chatlog("(" + ppP+"@"+recipient+Ppp +  ") " +ooO+str(self.nick)+":"+Ooo+" " + msg)
+            if time == "":
+                time = datetime.now()
+
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),
+                                          self.color+",en", "n" + str(self._getUser(recipient).id) + "-" + recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/msg" + " " + recipient + " " + msg),
+                                          self.color+",en", "b" + str(self._getUser(recipient).id) + "-" + recipient])
+            self._chatlog("(" + ppP+"@"+recipient+Ppp + ") " + ooO + str(self.nick)+":"+Ooo+" " + msg)
+
             global lastPMRecip
             lastPMRecip = recipient
-            
             self.addToPMsDict(self.nick, msg, time)
-        else: print(ssS+"--- Could not send PM: user does not exist ---"+Sss)
+        else:
+            print(ssS+"--- Could not send PM: user does not exist ---"+Sss)
     
     def addToPMsDict(self, nick, msg, time):
         time = time.strftime("%Y%m%d%H%M%S%f")
-        room.pmsDict[time] = [nick, msg, time] # [user, msg, time]
+        room.pmsDict[time] = [nick, msg, time]  # [user, msg, time]
+
     def windowTitle(self, title="", prefix=""):
         global windowTitlePrefix
         if title == "@?@":
@@ -701,23 +795,28 @@ Usage: /title [OPTIONS]
     @@ CUSTOM  Prefix is CUSTOM
 """+Sss)
             return
-        if prefix == "": prefix = windowTitlePrefix 
-        else: windowTitlePrefix  = prefix
-        if title == "": title = self.nick
+        if prefix == "":
+            prefix = windowTitlePrefix
+        else:
+            windowTitlePrefix = prefix
+        if title == "":
+            title = self.nick
 
         prefix = str(prefix)
         # strip the start & end brackets
-        if prefix.startswith("["): prefix = prefix[1:] 
-        if prefix.endswith("]"): prefix = prefix[:-1]
+        if prefix.startswith("["):
+            prefix = prefix[1:]
+        if prefix.endswith("]"):
+            prefix = prefix[:-1]
         
         title = str(title)
-        prefix = prefix + ": "
+        prefix += ": "
         setWindowTitle(prefix + title)
     
     def setTimeformat(self, newformat):
         global timeformat
         global timeOnRight
-        print(ssS),
+        print(ssS)
         newformat = str(newformat).lower()
         if newformat == "?":
             print(ssS+"""\
@@ -742,19 +841,19 @@ Usage: /time [OPTIONS]
             timeformat = ""
         elif newformat == "r":
             timeOnRight = 1
-            print("--- Timestamp now on right ---"+Sss)
+            print("--- Timestamp now on right ---" + Sss)
         elif newformat == "l":
             timeOnRight = 0
-            print("--- Timestamp now on left ---"+Sss)
+            print("--- Timestamp now on left ---" + Sss)
         else:
             try:
                 test = datetime.now().strftime(newformat)
                 print("--- Timestamp preview: " + test)
-                if raw_input("--- Enter 'y' to apply: "+Sss) == "y":
+                if raw_input("--- Enter 'y' to apply: "+ Sss) == "y":
                     timeformat = newformat
             except:
-                print("--- An error occured ---"+Sss)
-        print(Sss),
+                print("--- An error occured ---" + Sss)
+        print(Sss)
 
     def toggleNotificationsDisplay(self, arg=""):
         if arg == "?":
@@ -779,29 +878,33 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
             if arg == "off":
                 print(status + "off")
                 self.notificationsOn = False
-        print Sss,
+        print Sss
 
     def userinfo(self, recipient):
         try:
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","b" + self._getUser(recipient).id + "-" + recipient])
-            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"),"#0" + ",en","n" + self._getUser(recipient).id + "-" + recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"), "#0" + ",en","b" +
+                                          self._getUser(recipient).id + "-" + recipient])
+            self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo $request"), "#0" + ",en","n" +
+                                          self._getUser(recipient).id + "-" + recipient])
         except:
             print(ssS+"--- Error getting user info. User might not exist ---"+Sss)
 
     def ignore(self, user):
         ignoreList.append(user)
-        print(ssS+"--- Ignored " + user + " ---"+Sss)
+        print(ssS+"--- Ignored " + user + " ---" + Sss)
 
     def unignore(self, user):
         try:
             ignoreList.remove(user)
-            print(ssS+"--- Unignored " + user + " ---"+Sss)
+            print(ssS+"--- Unignored " + user + " ---" + Sss)
         except:
             return
 
     def sendUserInfo(self, recipient, info):
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" + self._getUser(recipient).id +"-"+ recipient])
-        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"b" + self._getUser(recipient).id +"-"+ recipient])
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"n" +
+                                      self._getUser(recipient).id +"-"+ recipient])
+        self._sendCommand("privmsg", [u"" + self._encodeMessage("/userinfo"+" "+u""+info), "#0,en" +"b" +
+                                      self._getUser(recipient).id +"-"+ recipient])
 
     def setNick(self, nick=None):
         if not nick: nick = self.nick
@@ -831,8 +934,10 @@ Usage: /close [OPTIONS]
     [blank]  If blank, close your own cam
 """+Sss)
             return
-        if nick == "": self._sendCloseStream() # close yours 
-        else: self._sendCommand("owner_run", [ u"_close" + nick])
+        if nick == "":
+            self._sendCloseStream()  # close yours
+        else:
+            self._sendCommand("owner_run", [u"_close" + nick])
 
     def ban(self, nick):
         if nick not in self.users.keys():
@@ -859,7 +964,7 @@ Usage: /sc [OPTIONS]
         global lastYT
         if video == "@":
             if lastYT != "":
-                webbrowser.open("https://www.youtube.com/watch?v="+lastYT)
+                webbrowser.open("https://www.youtube.com/watch?v=" + lastYT)
         else:
             try:
                 try:
@@ -870,6 +975,7 @@ Usage: /sc [OPTIONS]
                 lastYT = str(yt)
             except:
                 self.adminsay("Something went wrong, maybe that link was invalid. Try again.")
+
     def stopYoutube(self):
         self.say("/mbc youTube")
 
@@ -897,12 +1003,13 @@ Usage: /sc [OPTIONS]
             i = TINYCHAT_COLORS.index(self.color)
         except:
             i = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
+
         i = (i + 1) % len(TINYCHAT_COLORS)
         self.color = TINYCHAT_COLORS[i]
 
     def selectColor(self, inputcolor):
         if inputcolor == "?":
-            print(ssS+"""\
+            print(ssS + """\
 Description: Sets your nick color
 Usage: /color [OPTIONS]
     COLORNAME     Color name i.e. pink
@@ -913,39 +1020,45 @@ Usage: /color [OPTIONS]
         if inputcolor == "list":
             print(ssS+"--- Available colors: " + (", ".join(COLORS_DICT.keys())) + " ---"+Sss)
             return
+
         currentColor = "black"
         colorBlack = 0
         newColor = inputcolor
-        for i in COLORS_DICT.keys(): # Get current color name
+        for i in COLORS_DICT.keys():  # Get current color name
             if COLORS_DICT[i] == self.color:
                 currentColor = i
                 break
+
         if inputcolor == "black" or inputcolor == "00":
             colorBlack = 1
             newColor = "black"
-        colorInfo = ssS+"--- Color: " + newColor + " (Old: " + currentColor + ") ---"+Sss
+
+        colorInfo = ssS + "--- Color: " + newColor + " (Old: " + currentColor + ") ---" + Sss
         invalidColor = ssS+"--- Invalid color ---"+Sss
         if colorBlack == 1:
             self.color = "#000000"
             print(colorInfo)
             colorBlack = 0
-        elif inputcolor in COLORS_DICT.keys(): # If exising color name
+
+        elif inputcolor in COLORS_DICT.keys(): # If existing color name
             self.color = COLORS_DICT[inputcolor]
             print(colorInfo)
-        else: # If existing color number
+        else:  # If existing color number
             try:
                 i = int(inputcolor)
             except:
                 print(invalidColor)
                 return
+
             newColor = colorNames[i]
-            colorInfo = ssS+"--- Color: " + newColor + " (Old: " + currentColor + ") ---"+Sss
-            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)): # Check if valid color number # todo: color nums don't work, max color num is wrong
+            colorInfo = ssS + "--- Color: " + newColor + " (Old: " + currentColor + ") ---" + Sss
+            # Check if valid color number # todo: color nums don't work, max color num is wrong
+            if i >= 0 and (i <= (len(TINYCHAT_COLORS)-1)):
                 print(colorInfo)
                 self.color = TINYCHAT_COLORS[i]
             else:
                 print(invalidColor)
-        print(Sss),
+        print(Sss)
 
     def listUsers(self, input):
         print ssS
@@ -958,6 +1071,7 @@ Usage: /list [OPTIONS]
             return
         users = room.users
         userlist = []
+
         print("--- User list: "),
         for user in users.keys():
             user = users[user]
@@ -973,63 +1087,81 @@ Usage: /list [OPTIONS]
             for user in users.keys():
                 user = users[user]
                 m = None
-                if user.lastMsg != None: m = user.lastMsg.msg
-                print(ssS+"Nick: " + str(user.nick) + " | ID: " + str(user.id) + " | Color: " + str(user.color)
-                + " | Last Message: " + str(m) + " | Mod: " + str(user.oper) + " | Admin: " + str(user.admin)
-                + " | Account Name: " + str(user.accountName))
-        print Sss,
+                if user.lastMsg is not None:
+                    m = user.lastMsg.msg
+                print(ssS+"Nick: " + str(user.nick) + " | ID: " + str(user.id) + " | Color: " + str(user.color) +
+                      " | Last Message: " + str(m) + " | Mod: " + str(user.oper) + " | Admin: " + str(user.admin) +
+                      " | Account Name: " + str(user.accountName))
+        print Sss
 
     def onConnect(self):
-        if self.echo: print("You have connected to Tinychat.")
+        if self.echo:
+            print("You have connected to Tinychat.")
 
     def onConnectFail(self):
-        if self.echo: print("You failed to connect to Tinychat.")
+        if self.echo:
+            print("You failed to connect to Tinychat.")
 
     def onJoin(self, user):
-        if self.echo: print(self.room + ": " + user.nick + " entered the room.")
+        if self.echo:
+            print(self.room + ": " + user.nick + " entered the room.")
 
     def onQuit(self, user):
-        if self.echo: print(self.room + ": " + user.nick + " left the room.")
+        if self.echo:
+            print(self.room + ": " + user.nick + " left the room.")
 
     def onBan(self, user):
-        if self.echo: print(self.room + ": " + user.nick + " was banned.")
+        if self.echo:
+            print(self.room + ": " + user.nick + " was banned.")
 
     def onRegister(self, user):
-        if self.echo: print("You have connected to " + self.room + ".")
+        if self.echo:
+            print("You have connected to " + self.room + ".")
 
     def onTopic(self, topic):
-        if self.echo: print(self.room + ": Topic set to \"" + topic + "\".")
+        if self.echo:
+            print(self.room + ": Topic set to \"" + topic + "\".")
 
     def onUserInfo(self, user):
-        if self.echo: print(self.room + ": Account name for nick \"" + user.nick + "\" recieved: " + user.accountName)
+        if self.echo:
+            print(self.room + ": Account name for nick \"" + user.nick + "\" recieved: " + user.accountName)
 
     def onUserInfoRequest(self, user):
         self.sendUserInfo(user.nick, self.username)
 
     def onMessage(self, user, message):
-        if self.echo: message.printFormatted()
+        if self.echo:
+            message.printFormatted()
 
     def onPM(self, user, message):
-        if self.echo: message.printFormatted()
+        if self.echo:
+            message.printFormatted()
 
     def onNickChange(self, new, old, user):
-        if self.echo: print(self.room + ": " + old + " changed nickname to " + new + ".")
+        if self.echo:
+            print(self.room + ": " + old + " changed nickname to " + new + ".")
 
     def onNickTaken(self, nick):
-        if self.echo: print("Nick in use, please set a different one")
+        if self.echo:
+            print("Nick in use, please set a different one")
 
     def onDisconnect(self):
-        if self.echo: print("You have disconnected from " + self.room + ".")
+        if self.echo:
+            print("You have disconnected from " + self.room + ".")
 
     def _chatlog(self, msg, echo=1):
-        if self.echo2 and echo == 1: print(msg)
+        if self.echo2 and echo == 1:
+            print(msg)
         if echo == "open":
-            logfile = LOG_BASE_DIRECTORY + self.room + "/chatroom.log"
-            if os.name == "nt": system('"' + logfile.replace('/', '\\') + '"')
-            else: system(textEditor + ' "' + logfile + '"')
+            logfile = defaultConfig['LOG_BASE_DIRECTORY'] + self.room + "/chatroom.log"
+            if os.name == "nt":
+                system('"' + logfile.replace('/', '\\') + '"')
+            else:
+                system(defaultConfig['textEditor'] + ' "' + logfile + '"')
         elif self.chatlogging:
-            msg = msg.replace("[36m", "").replace("[0m", "").replace("[33m", "").replace("[1m", "") # strips ASCII escape codes added by console colors
-            d = LOG_BASE_DIRECTORY + "/" + self.room + "/"
+            # strips ASCII escape codes added by console colors
+            msg = msg.replace("[36m", "").replace("[0m", "").replace("[33m", "").replace("[1m", "")
+            d = defaultConfig['LOG_BASE_DIRECTORY'] + "/" + self.room + "/"
             if not os.path.exists(d):
                 os.makedirs(d)
             logfile = open(d + "chatroom.log", "a")
@@ -1055,30 +1187,34 @@ Usage: /list [OPTIONS]
         self.connection.writer.writepublish(msg)
         self.connection.writer.flush()
 
-    def __authHTTP(self): #todo - Rework this Funtions
-        self.headers = {'Host': 'tinychat.com',
+    # todo - Rework this function.
+    def __authHTTP(self):
+        self.headers = {'Host': 'https://tinychat.com',
                         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        "Referer": "http://tinychat.com/start/",
+                        "Referer": "https://tinychat.com/start/",
                         'Accept-Language': 'en-US,en;q=0.5',
                         'DNT': 1,
                         'Connection': 'keep-alive'}
         self.cookies = {}
+
         data = {"form_sent": "1",
                 "username": self.username,
               "password": self.passwd,
                           "passwordfake": "Password"}
-        url = "http://tinychat.com/login"
+
+        url = "https://tinychat.com/login"
         raw = self.s.request(method='POST', url=url, data=data, headers=self.headers, cookies=self.cookies, stream=True)
         self.cookies = {}
 
-    def __getRTMPInfo(self): #todo - Rework this Funtions
+    # todo - Rework this function.
+    def __getRTMPInfo(self):
         if self.roomPassword:
-            pwurl = "http://apl.tinychat.com/api/find.room/" + self.room + "?site=tinychat.com&url=tinychat.com&password=" + self.roomPassword
+            pwurl = "http://api.tinychat.com/api/find.room/" + self.room + "?site=tinychat.com&url=tinychat.com&password=" + self.roomPassword
             raw = self.s.get(pwurl)
-
         else:
-            url = "http://apl.tinychat.com/api/find.room/" + self.room + "?site=tinychat"
+            url = "http://api.tinychat.com/api/find.room/" + self.room + "?site=tinychat"
+
             raw = self.s.request(method="GET", url=url, headers=self.headers, cookies=self.cookies)
             if "result='PW'" in raw.text:
                 self.roomPassword = get_input("Enter the password for room " + self.room + ": ")
@@ -1086,10 +1222,8 @@ Usage: /list [OPTIONS]
             else:
                 return raw.text.split("rtmp='")[1].split("'")[0]
 
-    def __getAutoOp(self, room):
-        if AUTO_OP_OVERRIDE:
-            r = AUTO_OP_OVERRIDE
-        else:
+    def __getAutoOp(self):
+        if not defaultConfig['AUTO_OP_OVERRIDE']:
             url = "http://tinychat.com/" + self.room
             raw = self.s.request(method="GET", url=url, headers=self.headers, cookies=self.cookies)
             if ", autoop: \"" in raw.text:
@@ -1098,10 +1232,8 @@ Usage: /list [OPTIONS]
             else:
                 return ""
 
-    def __getProHash(self, room):
-        if PROHASH_OVERRIDE:
-            r = PROHASH_OVERRIDE
-        else:
+    def __getProHash(self):
+        if not defaultConfig['PROHASH_OVERRIDE']:
             url = "http://tinychat.com/" + self.room
             raw = self.s.request(method="GET", url=url, headers=self.headers, cookies=self.cookies)
             if ", prohash: \"" in raw.text:
@@ -1123,7 +1255,9 @@ Usage: /list [OPTIONS]
                 'Accept': 'gzip, deflate',
                 'Accept-Language': 'en-US,en;q=0.5',
                 'DNT': 1,
-                'Connection': 'keep-alive'}
+                'Connection': 'keep-alive'
+        }
+
         mills = int(round(time.time() * 1000))
         url = "http://tinychat.com/cauth?room="+self.room+"&t="+str(mills)
         r = self.s.request(method="GET", url=url, headers=headers, cookies=self.cookies)
@@ -1137,6 +1271,7 @@ Usage: /list [OPTIONS]
             rr = r.replace("\\", "")
             self._sendCommand("cauth", [u"" + rr])
 
+
 # MAIN
 if __name__ == "__main__":
     if roomnameArg == 0:
@@ -1148,20 +1283,20 @@ if __name__ == "__main__":
            usernameArg = raw_input("Enter username (optional): ")
         if passwordArg == 0:
            passwordArg = raw_input("Enter password (optional): ")
-        # if colorArg == 0:
-           # colorArg = raw_input("Enter color (optional): ")
+
     if usernameArg == 0: usernameArg = ""
     if passwordArg == 0: passwordArg = ""
     room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
     # Console colors
-    colorama.init() # todo: move this whole section somewhere else
+    colorama.init()  # todo: move this whole section somewhere else
     # nicks
-    if highContrast == True:
+    if defaultConfig['highContrast']:
         ooO = Fore.CYAN + Style.BRIGHT
     else:
         ooO = Style.BRIGHT
+
     Ooo = Style.RESET_ALL
     # status/error
     ssS = Fore.YELLOW + Style.BRIGHT
@@ -1178,7 +1313,8 @@ if __name__ == "__main__":
     lastSC = ""
 
     start_new_thread(room._recaptcha, ())
-    while not room.connected: time.sleep(1)
+    while not room.connected:
+        time.sleep(1)
     while room.connected:
         # Autoset initial color. Just does /color colorArg after connecting. Very lazy and wasteful. 
         # todo: Instead set color in the init method using its nickColor arg; see section "Set initial color (draft)".
@@ -1187,6 +1323,7 @@ if __name__ == "__main__":
             colorArg = 0
         else:
             msg = raw_input()
+
         if len(msg) > 0:
             if msg[0] == "/":
                 msg = msg[1:]
@@ -1205,20 +1342,28 @@ if __name__ == "__main__":
                     if cmd.lower() == "publish":
                         room._sendCreateStream()
                         room._sendPublish()
+
                     elif cmd.lower() == "say":
                         room.say(par)
+
                     elif cmd.lower() == "pre":
                         room.setPrepend(pars)
+
                     elif cmd.lower() == "userinfo" or cmd.lower() == "whois":
                         room.userinfo(par)
+
                     elif cmd.lower() == "alert":
                         room.setMentions(pars)
+
                     elif cmd.lower() == "ignore":
                         room.ignore(par)
+
                     elif cmd.lower() == "unignore":
                         room.unignore(par)
+
                     elif cmd.lower() == "list":
                         room.listUsers(par)
+
                     elif cmd.lower() == "pm":
                         if len(pars) > 0:
                             pmMsg = " ".join(pars[1:])
@@ -1234,70 +1379,95 @@ if __name__ == "__main__":
                             else:
                                 room.pm(pmMsg, pmRecip, datetime.now())
                         else:
-                            print(ssS+"Argument required."+Sss)
+                            print(ssS + "Argument required." + Sss)
+
                     elif cmd.lower() == "what":
-                        if (room.username == None or room.username == 0 or room.username == ""): username = "" # dupe of jf7k9... maybe make a usernameParenthesis function
-                        else: username = " (" + room.username + ")"
-                        print(ssS+room.nick + username + " in " + room.room+Sss)
+                        if room.username is None or room.username is 0 or room.username is "":
+                            username = ""  # dupe of jf7k9... maybe make a usernameParenthesis function
+                        else:
+                            username = " (" + room.username + ")"
+                        print(ssS + room.nick + username + " in " + room.room + Sss)
+
                     elif cmd.lower() == "nick":
                         room.setNick(par)
+
                     elif cmd.lower() == "color":
                         if len(par) > 0:
                             room.selectColor(par)
                         else:
                             room.cycleColor()
+
                     elif cmd.lower() == "time":
                         if len(par) > 0:
                             room.setTimeformat(par)
-                    elif cmd.lower() == "title": # todo: move this logic to windowTitle
+
+                    elif cmd.lower() == "title":  # todo: move this logic to windowTitle
                         if len(pars) > 0:
-                            if pars[0] == "@": # nick
+                            if pars[0] == "@":  # nick
                                 room.windowTitle(room.nick)
-                            elif pars[0].startswith("@@"): # prefix
-                                if pars[1] != "": # prefix = nick
+                            elif pars[0].startswith("@@"):  # prefix
+                                if pars[1] is not "":  # prefix = nick
                                     room.windowTitle("", pars[1:])
                                 else: # prefix = par
                                     room.windowTitle("", room.nick)
-                            elif pars[0] == "": # clear
+                            elif pars[0] is "":  # clear
                                 room.windowTitle()
-                            elif pars[0] == "?": # help
+                            elif pars[0] is "?":  # help
                                 room.windowTitle("@?@")
                             else:
                                 room.windowTitle(pars[0])
+
                     elif cmd.lower() == "/":
                         room.windowTitle()
+
                     elif cmd.lower() == "notifications" or cmd.lower() == "notes":
                         room.toggleNotificationsDisplay(par)
+
                     elif cmd.lower() == "close":
                         room.close(par)
+
                     elif cmd.lower() == "ban":
                         room.ban(par)
+
                     elif cmd.lower() == "quit":
                         room.disconnect()
+
                     elif cmd.lower() == "reconnect":
                         room.reconnect()
+
                     elif cmd.lower() == "playyoutube" or cmd.lower() == "yt":
                         room.playYoutube(par)
+
                     elif cmd.lower() == "stopyoutube":
                         room.stopYoutube()
+
                     elif cmd.lower() == "playsoundcloud" or cmd.lower() == "sc":
                         room.playSoundcloud(par)
+
                     elif cmd.lower() == "stopsoundcloud":
                         room.stopSoundcloud()
+
                     elif cmd.lower() == "banlist":
                         room.banlist()
+
                     elif cmd.lower() == "forgive":
                         room.forgive(par)
+
                     elif cmd.lower() == "forgivename":
                         room.forgiveName(par)
+
                     elif cmd.lower() == "topic":
                         room.setTopic(par)
+
                     elif cmd.lower() == "adminsay" or cmd.lower() == "a":
                         room.adminsay(par)
+
                     elif cmd.lower() == "sys":
                         system(" ".join(pars))
+
                     elif cmd.lower() == "log":
                         room.openChatlog()
+
                     elif cmd.lower() == "delay":
                         room.setMessageDelay(par)
             else:
