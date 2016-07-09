@@ -1,22 +1,9 @@
 
+""" pinychat (Legacy)"""
 
-# pinychat Legacy version
-# Originally developed by NotNola. Modified by SwiftSwathSee. Legacy edit by GoelBiju (https://github.com/GoelBiju)
-
-# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR
-
-import rtmp_protocol
-import requests
-import random
-import os
-import sys, getopt
-import time
-import socket
-import webbrowser
-from datetime import datetime
-import colorama
-from colorama import Fore, Style
-from os import system
+# Originally developed by NotNola.
+# Modified by SwiftSwathSee.
+# Legacy edit by GoelBiju (https://github.com/GoelBiju)
 
 # Table of contents...(incomplete)
 # INIT:
@@ -37,6 +24,22 @@ from os import system
 # MAIN:
 #   Console colors
 #   Command handling
+
+
+import rtmp_protocol
+import requests
+import random
+import os
+import sys, getopt
+import time
+import socket
+import webbrowser
+from datetime import datetime
+import colorama
+from colorama import Fore, Style
+from os import system
+
+# Commandline options: -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR
 
 # Python version check: checking for 2 or 3.
 if sys.version_info[0] >= 3:
@@ -59,7 +62,7 @@ colorArg = 0
 
 # SETTINGS
 # Default settings
-defaultConfig = { 
+defaultConfig = {
     "AUTO_OP_OVERRIDE": None,
     "PROHASH_OVERRIDE": None,
     "DefaultRoom": None,
@@ -94,12 +97,12 @@ config = ConfigParser(allow_no_value=True)
 configCheck = config.read(configfileName)
 
 if configCheck is []:  # make it if it doesn't exist
-    configfile = open(configfileName, 'a') 
+    configfile = open(configfileName, 'a')
     configfile.write("[Main]\n")
     print("Created settings file " + configfileName)
     configfile.close()
 else:  # if it exists, check for the section header. todo: if add the header if needed
-    configfile = open(configfileName, 'r') 
+    configfile = open(configfileName, 'r')
     firstline = configfile.readline()
     if firstline != "[Main]\n":
         if firstline != "[Main]\r\n":
@@ -195,7 +198,7 @@ if roomnameArg is str:
 
 
 # Color name and color number list (the commented one)
-COLORS_DICT = { 
+COLORS_DICT = {
 "dark blue": "#1965b6",  # 0 Color numbers
 "sky blue": "#32a5d9",  # 1
 "lime gray": "#7db257",  # 2
@@ -241,7 +244,7 @@ def debugPrint(msg, room="unknown_room"):
 
 
 def setWindowTitle(title, firstRun=0):
-    if firstRun != 0: title = windowTitlePrefix + ": " + title 
+    if firstRun != 0: title = windowTitlePrefix + ": " + title
     if os.name == "nt":
         system("title " + title)
     else:
@@ -279,22 +282,20 @@ class TinychatUser:
 
 
 class TinychatRoom:
-    # Manages a single room connection
-    def __init__(self, room, username=None, nick=None, passwd=None, roomPassword=None):
-        self.room = room
-        if username is not None:
-            self.username = username.lower()
-        else:
-            self.username = username
 
+    # Manages a single room connection
+    def __init__(self, room, nick=None, username=None, passwd=None, roomPassword=None):
+
+        self.room = room
         self.nick = nick
+        self.username = username
         self.passwd = passwd
         self.roomPassword = roomPassword
         self.s = requests.session()
         self.__authHTTP()
         self.autoop = self.__getAutoOp()
         self.prohash = self.__getProHash()
-        self.tcurl = self.__getRTMPInfo()
+        self.tcurl, self.roomtype = self.__getRTMPInfo()                # Return both the tcurl and the roomtype.
         tcurlsplits = self.tcurl.split("/tinyconf")                     # >>['rtmp://127.0.0.1:1936', '']
         tcurlsplits1 = self.tcurl.split("/")                            # >>['rtmp:', '', '127.0.0.1:1936', 'tinyconf']
         tcurlsplits2 = self.tcurl.split(":")                            # >>['rtmp', '//127.0.0.1', '1936/tinyconf']
@@ -309,17 +310,17 @@ class TinychatRoom:
         self.flashver = "WIN 16,0,0,257"                                # static
         self.connected = False
         # self.queue = []
-        
+
         # Set initial color (draft) - see section "Autoset initial color"
         # if nickColor is 0:
-            # self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
+        #       self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         # else:
-            # self.color = COLORS_DICT[nickColor]
-        
+        #       self.color = COLORS_DICT[nickColor]
+
         self.color = TINYCHAT_COLORS[random.randint(0, len(TINYCHAT_COLORS) - 1)]
         self.topic = None
         self.users = {}
-        self.echo = False # the old one
+        self.echo = False  # the old one
         self.echo2 = __name__ == "__main__"  # the new one!
         self.chatlogging = defaultConfig['CHAT_LOGGING']
         self.userID = None
@@ -353,7 +354,7 @@ class TinychatRoom:
             token = r.text.split('"token":"')[1].split('"')[0]
             urll = ("http://tinychat.com/cauth/recaptcha?token=" + token)
             webbrowser.open(urll)
-            if self.username is None or self.username is 0 or self.username is "":
+            if self.username is None or len(self.username) is 0 or self.username is "":
                 username = ""  # dupe of jf7k9... maybe make a usernameParenthesis function
             else:
                 username = " (" + self.username + ")"
@@ -375,19 +376,26 @@ class TinychatRoom:
             debugPrint("App: " + str(self.app), str(self.room))
             debugPrint("Room: " + str(self.room), str(self.room))
             debugPrint("AutoOp: " + str(self.autoop), str(self.room))
+
             try:
-                if self.username is None or self.username is 0 or self.username is "":
+                if self.username is None or len(self.username) is 0 or self.username is "":
                     username = ""  # dupe of jf7k9... maybe make a usernameParenthesis function
                 else:
                     username = " (" + self.username + ")"
 
-                self.connection.connect([self.room, self.autoop, u'show', u'tinychat',
-                                         self.username, "", self.timecookie])
+                # This old connection packet still works, however only on guest and not when signed in.
+                self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
+
+                # New format to connect to the flash application.
+                # self.connection.connect([self.username, self.roomtype, u'tinychat', self.room, self.flashver, self.timecookie])
+
                 self.connected = True
                 self._chatlog(" === Connected to " + str(self.room) + " as " + self.nick + username +
                               " === " + datetime.now().strftime(defaultConfig['dateformat']))
+
                 self.onConnect()
                 self._listen()
+
             except Exception:
                 debugPrint("FAILED TO CONNECT", self.room)
                 self.onConnectFail()
@@ -687,7 +695,7 @@ Usage: /delay [OPTIONS]
                 return
             self.delayMessageAmount = input
             print(ssS + "--- Message delay: " + str(input) + " seconds ---"+Sss)
-            
+
     def setMentions(self, input):
         if input[0] == "?":
             print(ssS+"""\
@@ -748,14 +756,14 @@ Usage: /pm [USER] [MESSAGE]
             except ValueError:
                 pass
             print(ssS+"PMs list"+Sss)
-            
+
             sortedpmsDict = sorted(room.pmsDict.items())  # inefficient: maybe switch to multidimensional arrays instead of a dict, since arrays are already ordered
             indexEnd = len(sortedpmsDict)
             if numToShow > 0:
                 indexStart = indexEnd-numToShow
             else:
                 indexStart = 0
-            
+
             for id, pm in sortedpmsDict[indexStart:indexEnd]:
                 dictNick = pm[0]
                 dictTime = datetime.strptime(pm[2], "%Y%m%d%H%M%S%f").strftime(timeformat)
@@ -778,7 +786,7 @@ Usage: /pm [USER] [MESSAGE]
             self.addToPMsDict(self.nick, msg, time)
         else:
             print(ssS+"--- Could not send PM: user does not exist ---"+Sss)
-    
+
     def addToPMsDict(self, nick, msg, time):
         time = time.strftime("%Y%m%d%H%M%S%f")
         room.pmsDict[time] = [nick, msg, time]  # [user, msg, time]
@@ -808,11 +816,11 @@ Usage: /title [OPTIONS]
             prefix = prefix[1:]
         if prefix.endswith("]"):
             prefix = prefix[:-1]
-        
+
         title = str(title)
         prefix += ": "
         setWindowTitle(prefix + title)
-    
+
     def setTimeformat(self, newformat):
         global timeformat
         global timeOnRight
@@ -1180,7 +1188,7 @@ Usage: /list [OPTIONS]
         debugPrint("CLIENT: " + str(msg), str(self.room))
         self.connection.writer.writepublish(msg)
         self.connection.writer.flush()
-        
+
     def _sendCloseStream(self):
         msg = {"msg": rtmp_protocol.DataTypes.COMMAND, "command": [u"" + "closeStream", 0, None]}
         debugPrint("CLIENT: " + str(msg), str(self.room))
@@ -1189,38 +1197,50 @@ Usage: /list [OPTIONS]
 
     # todo - Rework this function.
     def __authHTTP(self):
-        self.headers = {'Host': 'https://tinychat.com',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        "Referer": "https://tinychat.com/start/",
-                        'Accept-Language': 'en-US,en;q=0.5',
-                        'DNT': 1,
-                        'Connection': 'keep-alive'}
+        self.headers = {
+            'Host': 'http://tinychat.com',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Referer': 'http://tinychat.com/start/',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'DNT': 1,
+            'Connection': 'keep-alive'
+        }
         self.cookies = {}
 
-        data = {"form_sent": "1",
-                "username": self.username,
-              "password": self.passwd,
-                          "passwordfake": "Password"}
+        data = {
+            "form_sent": "1",
+            "referer": "",
+            "next": "http://tinychat.com/home",
+            "username": self.username,
+            "password": self.passwd,
+            "passwordfake": "Password",
+            "remember": "1"
+        }
 
-        url = "https://tinychat.com/login"
-        raw = self.s.request(method='POST', url=url, data=data, headers=self.headers, cookies=self.cookies, stream=True)
+        url = "http://tinychat.com/login"
+        raw = self.s.request(method='POST', url=url, data=data, headers=self.headers, cookies=self.cookies)
         self.cookies = {}
 
     # todo - Rework this function.
     def __getRTMPInfo(self):
         if self.roomPassword:
+            # api --> apl
             pwurl = "http://api.tinychat.com/api/find.room/" + self.room + "?site=tinychat.com&url=tinychat.com&password=" + self.roomPassword
             raw = self.s.get(pwurl)
         else:
+            # api --> apl
             url = "http://api.tinychat.com/api/find.room/" + self.room + "?site=tinychat"
 
             raw = self.s.request(method="GET", url=url, headers=self.headers, cookies=self.cookies)
+
             if "result='PW'" in raw.text:
                 self.roomPassword = get_input("Enter the password for room " + self.room + ": ")
                 return self.__getRTMPInfo()
             else:
-                return raw.text.split("rtmp='")[1].split("'")[0]
+                roomtype = u'' + raw.text.split("roomtype='")[1].split("'")[0]
+                rtmp_info = raw.text.split("rtmp='")[1].split("'")[0]
+                return rtmp_info, roomtype
 
     def __getAutoOp(self):
         if not defaultConfig['AUTO_OP_OVERRIDE']:
@@ -1284,9 +1304,12 @@ if __name__ == "__main__":
         if passwordArg == 0:
            passwordArg = raw_input("Enter password (optional): ")
 
-    if usernameArg == 0: usernameArg = ""
-    if passwordArg == 0: passwordArg = ""
-    room = TinychatRoom(roomnameArg, usernameArg, nicknameArg, passwordArg)
+    if usernameArg == 0:
+        usernameArg = ""
+    if passwordArg == 0:
+        passwordArg = ""
+
+    room = TinychatRoom(roomnameArg, nicknameArg, usernameArg, passwordArg)
     setWindowTitle(nicknameArg, 1)
 
     # Console colors
@@ -1312,11 +1335,16 @@ if __name__ == "__main__":
     lastYT = ""
     lastSC = ""
 
+    # Solve the ReCaptcha.
     start_new_thread(room._recaptcha, ())
+
+    # Wait for a connection.
     while not room.connected:
         time.sleep(1)
+
+    # The connection once established can be used to send commands.
     while room.connected:
-        # Autoset initial color. Just does /color colorArg after connecting. Very lazy and wasteful. 
+        # Auto-set initial color. Just does /color colorArg after connecting. Very lazy and wasteful.
         # todo: Instead set color in the init method using its nickColor arg; see section "Set initial color (draft)".
         if colorArg != 0 and colorArg != "":
             msg = "/color " + str(colorArg)
@@ -1337,7 +1365,7 @@ if __name__ == "__main__":
                         cmd = parts[0]
                         pars = parts[1:]
                         par = " ".join(parts[1:])
-                    
+
                     # Command handling
                     if cmd.lower() == "publish":
                         room._sendCreateStream()
