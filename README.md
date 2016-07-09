@@ -15,14 +15,15 @@ Original developer - NotNola
 Edited - SwiftSwathSee
 Legacy - GoelBiju
 
-Pinychat is a Python module and client that allows you to easily interface with Tinychat.com. 
+Pinychat is a Python module and client that allows you to easily interface with [Tinychat](https://tinychat.com/). 
 
 Features:
-		* commandline arguments
-		* room logging
-		* mod actions
-		* public/private messages
-		* user ignoring, dummy cams etc.
+
+ - command-line arguments,
+ - room logging, 
+ - mod actions,
+ - public/private messages,
+ - user ignoring, dummy cams etc.
 
 ### Requirements 
 
@@ -48,11 +49,11 @@ Full: `tinychat.py -r ROOM -n NICK -u USERNAME -p PASSWORD -c COLOR`
 
 #### Using it as a standalone client
 
-See the [Commands](#commands) section.
+See the [commands](#commands) section.
 
 #### Using it as a module (i.e. as part of your own client)
 
-This is currently very limited, but you can see the `bot.py` example. Only a small subset of the module's features are available. Full module support will be added eventually.
+This is currently very limited, but you can see the `bot.py` example. Only a small subset of the module's features are available.
 
 ### Commands
 
