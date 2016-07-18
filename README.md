@@ -11,9 +11,9 @@
 
 ## Pinychat Legacy
 
-Original developer - NotNola
-Edited - SwiftSwathSee
-Legacy - GoelBiju
+* Original developer - NotNola
+* Edited - SwiftSwathSee
+* Legacy - GoelBiju
 
 Pinychat is a Python module and client that allows you to easily interface with [Tinychat](https://tinychat.com/). 
 
