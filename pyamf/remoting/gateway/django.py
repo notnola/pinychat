@@ -1,5 +1,5 @@
 # Copyright (c) The PyAMF Project.
-# See LICENSE.txt for details.
+# See LICENSE for details.
 
 """
 Gateway for the Django framework.

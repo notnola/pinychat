@@ -1,5 +1,5 @@
 # Copyright (c) The PyAMF Project.
-# See LICENSE.txt for details.
+# See LICENSE for details.
 
 """
 File included to make the directory a Python package.

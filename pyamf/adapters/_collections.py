@@ -1,5 +1,5 @@
 # Copyright (c) The PyAMF Project.
-# See LICENSE.txt for details.
+# See LICENSE for details.
 
 """
 U{collections<http://docs.python.org/library/collections.html>} adapter module.

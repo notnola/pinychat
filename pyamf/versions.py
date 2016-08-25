@@ -1,5 +1,5 @@
 # Copyright (c) The PyAMF Project.
-# See LICENSE.txt for details.
+# See LICENSE for details.
 
 """
 Because there is disparity between Python packaging (and it is being sorted

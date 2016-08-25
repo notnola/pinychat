@@ -1,5 +1,5 @@
 # Copyright (c) The PyAMF Project.
-# See LICENSE.txt for details.
+# See LICENSE for details.
 
 """
 Adapter for the U{decimal<http://docs.python.org/library/decimal.html>} module.

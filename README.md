@@ -5,8 +5,9 @@
 **Library**:
 [pinylib library](https://github.com/nortxort/pinylib)
 
-**Bot solution**:
-[pinybot](https://github.com/GoelBiju/pinybot/)
+**Bot solution/example**:
+Example - [tinybot](https://github.com/nortxort/tinybot/)
+Solution - [pinybot](https://github.com/GoelBiju/pinybot/)
 
 
 ## Pinychat Legacy
