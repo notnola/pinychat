@@ -1,13 +1,13 @@
 # Pinychat
 
-### *Pinychat is now DEPRECIATED, please use the following libraries and bot solutions*
+### *Pinychat is DEPRECIATED, please use the following libraries and bot solutions*
 
 **Library**:
 [pinylib library](https://github.com/nortxort/pinylib)
 
 **Bot solution/example**:
-Example - [tinybot](https://github.com/nortxort/tinybot/)
-Solution - [pinybot](https://github.com/GoelBiju/pinybot/)
+*Example* - [tinybot](https://github.com/nortxort/tinybot/)
+*Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
 
 
 ## Pinychat Legacy
@@ -16,24 +16,24 @@ Solution - [pinybot](https://github.com/GoelBiju/pinybot/)
 * Edited - SwiftSwathSee
 * Legacy - GoelBiju
 
-Pinychat is a Python module and client that allows you to easily interface with [Tinychat](https://tinychat.com/). 
+Pinychat is a Python module and client that allows you to easily interface with [Tinychat](https://tinychat.com/).
 
 Features:
 
  - command-line arguments,
- - room logging, 
+ - room logging,
  - mod actions,
  - public/private messages,
  - user ignoring, dummy cams etc.
 
-### Requirements 
+### Requirements
 
 * [Python 2.7](https://www.python.org/download/releases/2.7/) **(preferrably)**
 * [requests](https://github.com/kennethreitz/requests)
 * [colorama](https://github.com/tartley/colorama)
 
     ```sh
-    # pip install requests 
+    # pip install requests
     # pip install colorama
     ```
 
@@ -73,12 +73,12 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 
 #### Mod
 
-* `topic [topic]`: set room topic 
+* `topic [topic]`: set room topic
 * `adminsay` (or `a`) ` [adminmessage]`: say admin message
 * `ban [user]`: ban a user
 * `forgive [user]`: unban a user
 * `forgivename [user]`: unban a user and display banlist
-* `banlist`: print banlist 
+* `banlist`: print banlist
 * `close [user]`: close a cam
 
 #### Other users
@@ -91,9 +91,9 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 #### Room
 
 * `playyoutube` (or `yt`) ` [URL]`: play video from URL or view last-played video
-* `stopyoutube` 
+* `stopyoutube`
 * `playsoundcloud`  (or `sc`) ` [URL]`: play track from URL or view last-played track
-* `stopsoundcloud` 
+* `stopsoundcloud`
 
 #### Client
 
@@ -104,7 +104,7 @@ Usage: `/command [options]`. Use the `?` option to see a full list of a commands
 * `log`: open chatlog in external editor (see textEditor setting)
 * `sys [shell command]`: runs a shell command
 * `quit`
-* `reconnect` 
+* `reconnect`
 
 ### Configuration
 
