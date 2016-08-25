@@ -3,12 +3,14 @@
 ### *Pinychat is DEPRECIATED, please use the following libraries and bot solutions*
 
 **Library**:
-[pinylib library](https://github.com/nortxort/pinylib)
+
+* [pinylib library](https://github.com/nortxort/pinylib)
 
 **Bot solution/example**:
-*Example* - [tinybot](https://github.com/nortxort/tinybot/)
-*Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
 
+* *Example* - [tinybot](https://github.com/nortxort/tinybot/)
+
+* *Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
 
 ## Pinychat Legacy
 
