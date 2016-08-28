@@ -1,17 +1,5 @@
 # Pinychat
 
-### *Pinychat is DEPRECIATED, please use the following libraries and bot solutions*
-
-**Library**:
-
-* [pinylib library](https://github.com/nortxort/pinylib)
-
-**Bot solution/example**:
-
-* *Example* - [tinybot](https://github.com/nortxort/tinybot/)
-
-* *Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
-
 ## Pinychat Legacy
 
 * Original developer - NotNola
@@ -132,3 +120,16 @@ Thanks to the people who have helped make this project possible either by submit
  - write better debug code,
  - add better comments / clean up code base,
  - add/complete PEP8 tweaks to the code.
+
+# Other libraries:
+
+**Library**:
+
+* [pinylib library](https://github.com/nortxort/pinylib)
+
+**Bot solution/example**:
+
+* *Example* - [tinybot](https://github.com/nortxort/tinybot/)
+
+* *Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
+
