@@ -1,6 +1,5 @@
 """
-Provides classes for creating RTMP (Real Time Message Protocol) servers and
-clients.
+Provides classes for creating RTMP (Real Time Message Protocol) servers and clients.
 """
 
 # SUPER DEBUGGERY EDITION
@@ -47,7 +46,7 @@ class FileDataTypeMixIn(pyamf.util.pure.DataTypeMixIn):
 
 
 class DataTypes:
-    """ Represents an enumeration of the RTMP message datatypes. """
+    """ Represents an enumeration of the RTMP message data-types. """
     NONE = -1
     SET_CHUNK_SIZE = 1
     USER_CONTROL = 4
@@ -89,6 +88,7 @@ class RtmpReader:
         Initialize the RTMP reader and set it to read from the specified stream.
         """
         self.stream = stream
+        self.prv_header = None
 
     def __iter__(self):
         return self
@@ -248,7 +248,7 @@ class RtmpReader:
             while body_stream.tell() < start_pos + so_body_size:
                 msg_params.append(decoder.readElement())
             assert body_stream.tell() == start_pos + so_body_size,\
-                (body_stream.tell(),start_pos,so_body_size)
+                (body_stream.tell(), start_pos,so_body_size)
             event['data'] = msg_params
         elif event['type'] == SOEventTypes.CLEAR:
             assert so_body_size == 0, so_body_size
@@ -318,6 +318,7 @@ class RtmpWriter:
             for command in message['command']:
                 # superDebug("command iteration", command)
                 encoder.writeElement(command)
+
         elif datatype == DataTypes.SHARED_OBJECT:
             # superDebug("enum", "SHARED_OBJECT")
             # superDebug("obj_name", message['obj_name'])
@@ -449,8 +450,8 @@ class RtmpWriter:
 
         # superDebug("header", header)
 
-        for i in xrange(0,len(body),self.chunk_size):
-            chunk = body[i:i+self.chunk_size]
+        for i in xrange(0, len(body), self.chunk_size):
+            chunk = body[i:i + self.chunk_size]
             self.stream.write(chunk)
             if i+self.chunk_size < len(body):
                 rtmp_protocol_base.header_encode(self.stream, header, header)
@@ -589,6 +590,12 @@ class RtmpClient:
         self.app = app
         self.shared_objects = []
 
+        self.socket = None
+        self.file = None
+        self.stream = None
+        self.reader = None
+        self.writer = None
+
         # superDebugNotice("rtmp client __init__")
         # superDebug("ip", self.ip)
         # superDebug("port", self.port)
@@ -645,8 +652,8 @@ class RtmpClient:
                 1,
                 {
                     'videoCodecs': 252,
-                    'audioCodecs': 3191,
-                    'flashVer': u'WIN 10,1,85,3',
+                    'audioCodecs': 3575,
+                    'flashVer': u'WIN 22,0,0,209',
                     'app': self.app,
                     'tcUrl': self.tc_url,
                     'videoFunction': 1,
@@ -663,12 +670,20 @@ class RtmpClient:
         # superDebug("command", msg)
         # superDebug("connect_params", connect_params)
 
-        msg['command'].extend(connect_params)
+        # Allow for an RTMP object (a dictionary our case) to be sent,
+        # instead of extending everything as single values into the body.
+        if type(connect_params) is dict:
+            msg['command'].append(connect_params)
+        else:
+            msg['command'].extend(connect_params)
         self.writer.write(msg)
         self.writer.flush()
 
-    def call(self, proc_name, parameters={}, trans_id=0):
+    def call(self, proc_name, parameters=None, trans_id=0):
         """ Runs remote procedure calls (RPC) at the receiving end. """
+        if parameters is None:
+            parameters = {}
+
         msg = {
             'msg': DataTypes.COMMAND,
             'command':
@@ -712,8 +727,6 @@ class RtmpClient:
             return True
         else:
             assert False, msg
-
-        return False
 
     def connect(self, connect_params):
         """ Connect to the server with the given connect parameters. """

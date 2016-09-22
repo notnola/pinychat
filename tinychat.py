@@ -1,4 +1,3 @@
-
 """ pinychat (Legacy)"""
 
 # Originally developed by NotNola.
@@ -107,7 +106,7 @@ else:  # if it exists, check for the section header. todo: if add the header if 
     if firstline != "[Main]\n":
         if firstline != "[Main]\r\n":
             if firstline != "[Main]":
-                print "Settings file must start with '[Main]' to be used"
+                print("Settings file must start with '[Main]' to be used")
     configfile.close()
 
 
@@ -306,8 +305,9 @@ class TinychatRoom:
         self.port = int(tcurlsplits3[1])
         self.app = tcurlsplits1[3]                                      # Defining Tinychat FMS App
         self.pageurl = "http://tinychat.com/" + room                    # Defining Tinychat's Room HTTP URL
-        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0668.swf?version=1.0.0.0668/[[DYNAMIC]]/8"
-        self.flashver = "WIN 16,0,0,257"                                # static
+        self.swfurl = "http://tinychat.com/embed/Tinychat-11.1-1.0.0.0673.swf?version=1.0.0.0673/[[DYNAMIC]]/8"
+        self.client_version = "Desktop 1.0.0.0673"
+        self.flashver = "WIN 22,0,0,209"                                # static
         self.connected = False
         # self.queue = []
 
@@ -325,7 +325,7 @@ class TinychatRoom:
         self.chatlogging = defaultConfig['CHAT_LOGGING']
         self.userID = None
         self.forgiveQueue = []
-        self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, '', self.app)
+        self.connection = rtmp_protocol.RtmpClient(self.ip, self.port, self.tcurl, self.pageurl, self.swfurl, self.app)
         self.notificationsOn = defaultConfig['notificationsOn']
         self.pmsDict = {}
         self.mentions = [self.nick]
@@ -360,7 +360,7 @@ class TinychatRoom:
                 username = " (" + self.username + ")"
             if defaultConfig['reCaptchaShow']:
                 print(urll)
-            raw_input("Ready to connect as " + ooO + self.nick + Ooo + username + " to " + ooO + self.room + Ooo +
+            get_input("Ready to connect as " + ooO + self.nick + Ooo + username + " to " + ooO + self.room + Ooo +
                       ".\nPress enter when the captcha has been solved.")
 
             self.timecookie = self.__getEncMills()
@@ -384,10 +384,19 @@ class TinychatRoom:
                     username = " (" + self.username + ")"
 
                 # This old connection packet still works, however only on guest and not when signed in.
-                self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "", self.timecookie])
+                # For some odd reason, connecting this way allows the 'avons', 'oper' and the old format for the
+                # 'joins' packet to be sent from the server.
+                # self.connection.connect([self.room, self.autoop, u'show', u'tinychat', self.username, "",
+                #                          self.timecookie])
 
-                # New format to connect to the flash application.
-                # self.connection.connect([self.username, self.roomtype, u'tinychat', self.room, self.flashver, self.timecookie])
+                # New format to connect to the RTMP (flash) application.
+                self.connection.connect({
+                    'account': self.username,
+                    'type': self.roomtype,
+                    'prefix': 'tinychat',
+                    'room': self.room,
+                    'version': self.client_version,
+                    'cookie': self.timecookie})
 
                 self.connected = True
                 self._chatlog(" === Connected to " + str(self.room) + " as " + self.nick + username +
@@ -404,12 +413,12 @@ class TinychatRoom:
         while self.connected:
             try:
                 msg = self.connection.reader.next()
-                print "-->", msg
+                print("-->", msg)
 
                 if msg['msg'] == rtmp_protocol.DataTypes.SET_CHUNK_SIZE:
                     self.connection.reader.chunk_size = msg['chunk_size']
                     self.connection.writer.chunk_size = msg['chunk_size']
-                    print "New chunk size:", self.connection.writer.chunk_size
+                    print("New chunk size:", self.connection.writer.chunk_size)
                 else:
                     debugPrint("SERVER: " + str(msg), str(self.room))
                     if msg['msg'] == rtmp_protocol.DataTypes.COMMAND:
@@ -498,7 +507,7 @@ class TinychatRoom:
                                         if phrase in str(message.msg):
                                             mentioned = 1
                                             # mentionedPhrase += [phrase]
-                                            print ssS+"["+phrase+"]",
+                                            print(ssS+"["+phrase+"]")
                                     if timeOnRight is 1 or timeOnRight:
                                         self._chatlog(ooO+str(user.nick)+":"+Ooo+" " + str(message.msg) + " [" + datetime.now().strftime(timeformat) + "]")
                                     else:
@@ -521,7 +530,6 @@ class TinychatRoom:
                             self._chatlog(datetime.now().strftime(timeformat) + " " + (user.nick) + " joined " + str(self.room) + ".", tmp)
 
                         elif cmd == "joins":
-                            print "in joins"
                             for i in range((len(pars) - 1) / 2):
                                 user = self._getUser(pars[i*2 + 2])
                                 user.id = pars[i*2 + 1]
@@ -591,7 +599,7 @@ class TinychatRoom:
             self.connected = False
             try:
                 self._shutdown()
-            except:
+            except Exception:
                 pass
             self.onDisconnect()
 
@@ -672,14 +680,14 @@ Usage: /pre [OPTIONS]
     def setMessageDelay(self, input):
         if input is "?":
             print(ssS+"""\
-Description: Manage message delay.
-Usage: /delay [OPTIONS]
-    NUMBER   Set delay to NUMBER (seconds)
-    on       Turn it on
-    off      Turn it off
-"""+Sss)
+                Description: Manage message delay.
+                Usage: /delay [OPTIONS]
+                NUMBER   Set delay to NUMBER (seconds)
+                on       Turn it on
+                off      Turn it off
+                """+Sss)
             return
-        print ssS,
+        print(ssS)
 
         if input == "on":
             self.delayMessageTrue = 1
@@ -699,23 +707,23 @@ Usage: /delay [OPTIONS]
     def setMentions(self, input):
         if input[0] == "?":
             print(ssS+"""\
-Description: Get alerts when certain phrases are mentioned.
-Usage: /alert [OPTIONS]
-    + PHRASE   Add PHRASE to mentions
-    - PHRASE   Remove PHRASE from mentions
-    l          List mentions
-"""+Sss)
+            Description: Get alerts when certain phrases are mentioned.
+            Usage: /alert [OPTIONS]
+            + PHRASE   Add PHRASE to mentions
+            - PHRASE   Remove PHRASE from mentions
+            l          List mentions
+            """+Sss)
             return
-        print ssS
+        print(ssS)
 
         cmd = input[0]
         string = " ".join(input[1:])
 
         if cmd == "list" or cmd == "l":
-            print "--- Mentions:",
+            print("--- Mentions:")
             for i in self.mentions:
                 print("'"+i+"'"),
-            print "--- "
+            print("--- ")
 
         elif cmd == "---":
             self.mentions = []
@@ -725,30 +733,31 @@ Usage: /alert [OPTIONS]
             try:
                 self.mentions.remove(string)
                 print("--- Mention removed: '" + string + "' ---")
-            except:
-                print "--- Error - mention doesn't exist? ---"
+            except Exception:
+                print("--- Error - mention doesn't exist? ---")
         elif cmd == "+":
             try:
                 self.mentions.append(string)
-            except:
-                print "--- Error ---"
+            except Exception:
+                print("--- Error ---")
             print("--- Mention added: '" + string + "' ---")
-        print Sss
+        print(Sss)
 
     def pm(self, msg, recipient, time=""):
         if recipient == "?":
             print(ssS+"""\
-Description: Send PM.
-Usage: /pm [USER] [MESSAGE]
-    Options for USER:
-    @       Latest PM sender
-    @@      Latest PM recipient
-    @u      Latest userinfo request
-    !       Clear (no MESSAGE needed)
-    list    List all PMs
-    list X  List last X PMs (X=number)
-"""+Sss)
+            Description: Send PM.
+            Usage: /pm [USER] [MESSAGE]
+            Options for USER:
+            @       Latest PM sender
+            @@      Latest PM recipient
+            @u      Latest userinfo request
+            !       Clear (no MESSAGE needed)
+            list    List all PMs
+            list X  List last X PMs (X=number)
+            """+Sss)
             return
+
         if recipient == "list":
             numToShow = 0
             try:
@@ -857,7 +866,7 @@ Usage: /time [OPTIONS]
             try:
                 test = datetime.now().strftime(newformat)
                 print("--- Timestamp preview: " + test)
-                if raw_input("--- Enter 'y' to apply: "+ Sss) == "y":
+                if get_input("--- Enter 'y' to apply: "+ Sss) == "y":
                     timeformat = newformat
             except:
                 print("--- An error occured ---" + Sss)
@@ -886,7 +895,7 @@ Usage: /notes [OPTIONS] ; If no options, toggle on or off.
             if arg == "off":
                 print(status + "off")
                 self.notificationsOn = False
-        print Sss
+        print(Sss)
 
     def userinfo(self, recipient):
         try:
@@ -1069,7 +1078,7 @@ Usage: /color [OPTIONS]
         print(Sss)
 
     def listUsers(self, input):
-        print ssS
+        print(ssS)
         if input == "?":
             print(ssS+"""\
 Description: Lists users.
@@ -1100,7 +1109,7 @@ Usage: /list [OPTIONS]
                 print(ssS+"Nick: " + str(user.nick) + " | ID: " + str(user.id) + " | Color: " + str(user.color) +
                       " | Last Message: " + str(m) + " | Mod: " + str(user.oper) + " | Admin: " + str(user.admin) +
                       " | Account Name: " + str(user.accountName))
-        print Sss
+        print(Sss)
 
     def onConnect(self):
         if self.echo:
@@ -1295,14 +1304,14 @@ Usage: /list [OPTIONS]
 # MAIN
 if __name__ == "__main__":
     if roomnameArg == 0:
-        roomnameArg = raw_input("Enter room name: ")
+        roomnameArg = get_input("Enter room name: ")
     if nicknameArg == 0:
-        nicknameArg = raw_input("Enter nickname (optional): ")
+        nicknameArg = get_input("Enter nickname (optional): ")
     if quickMode == 0:
         if usernameArg == 0:
-           usernameArg = raw_input("Enter username (optional): ")
+           usernameArg = get_input("Enter username (optional): ")
         if passwordArg == 0:
-           passwordArg = raw_input("Enter password (optional): ")
+           passwordArg = get_input("Enter password (optional): ")
 
     if usernameArg == 0:
         usernameArg = ""
@@ -1350,7 +1359,7 @@ if __name__ == "__main__":
             msg = "/color " + str(colorArg)
             colorArg = 0
         else:
-            msg = raw_input()
+            msg = get_input()
 
         if len(msg) > 0:
             if msg[0] == "/":
