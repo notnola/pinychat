@@ -1,10 +1,8 @@
 # Pinychat
-
-## Pinychat Legacy
+## Depreciated
 
 * Original developer - NotNola
 * Edited - SwiftSwathSee
-* Legacy - GoelBiju
 
 Pinychat is a Python module and client that allows you to easily interface with [Tinychat](https://tinychat.com/).
 
@@ -110,7 +108,6 @@ Thanks to the people who have helped make this project possible either by submit
 - [James Koss](https://github.com/phuein)
 - Lord Gaben
 - [Aida](https://github.com/Autotonic)
-- [GoelBiju](https://github.com/GoelBiju)
 
 ### To-do
 
@@ -126,10 +123,3 @@ Thanks to the people who have helped make this project possible either by submit
 **Library**:
 
 * [pinylib library](https://github.com/nortxort/pinylib)
-
-**Bot solution/example**:
-
-* *Example* - [tinybot](https://github.com/nortxort/tinybot/)
-
-* *Solution* - [pinybot](https://github.com/GoelBiju/pinybot/)
-
